@@ -3,13 +3,12 @@ import { Usuario } from '../models/usuario';
 import { Usuarioservice } from '../services/usuario.service';
 import Swal from 'sweetalert2';
 import { Router, RouterOutlet } from '@angular/router';
-import { NavbarComponent } from './navbar/navbar.component';
 import { SharingDataService } from '../services/sharing-data.service';
 
 @Component({
   selector: 'usuario-app',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet],
   templateUrl: './usuario-app.component.html',
   styleUrls: ['./usuario-app.component.css']
 })

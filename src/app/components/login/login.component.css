@@ -1,0 +1,9 @@
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 1rem;
+}
+
+body, html {
+  height: 100%;
+}

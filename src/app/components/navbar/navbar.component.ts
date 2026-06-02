@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Usuario } from '../../models/usuario';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'navbar',
@@ -10,4 +11,14 @@ import { Usuario } from '../../models/usuario';
 })
 export class NavbarComponent {
   @Input() usuarios: Usuario[] = [];
+
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }
