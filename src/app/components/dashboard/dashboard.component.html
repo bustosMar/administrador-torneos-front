@@ -1,13 +1,25 @@
-<div class="row row-cols-1 row-cols-md-2 g-4">
+<div class="row row-cols-1 row-cols-md-3 g-2">
   <div class="col" *ngFor="let entity of entities">
-    <div class="card h-100 shadow-sm">
-      <div class="card-body d-flex flex-column justify-content-between">
-        <div>
-          <h5 class="card-title">{{ entity.label }}</h5>
-          <p class="card-text">Accede al CRUD de {{ entity.label }}.</p>
-        </div>
-        <a [routerLink]="[entity.path]" class="btn btn-primary mt-3">Abrir CRUD</a>
+    <div class="card shadow-sm" style="max-width: 220px; margin: auto;">
+
+      <img
+        [src]="entity.image"
+        [alt]="entity.label"
+        class="card-img-top"
+        style="height: 100px; object-fit: contain; padding: 10px;">
+
+      <div class="card-body p-2 text-center">
+        <h6 class="card-title mb-1">{{ entity.label }}</h6>
+
+        <p class="card-text small mb-2">
+          Administrador de {{ entity.label }}.
+        </p>
+
+        <a [routerLink]="[entity.path]" class="btn btn-sm btn-primary">
+          Abrir
+        </a>
       </div>
+
     </div>
   </div>
 </div>

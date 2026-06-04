@@ -10,14 +10,43 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
+
   entities = [
-    { label: 'Árbitro', path: '/arbitros' },
-    { label: 'Equipo', path: '/equipos' },
-    { label: 'Gol', path: '/goles' },
-    { label: 'Grupo', path: '/grupos' },
-    { label: 'Jugador', path: '/jugadores' },
-    { label: 'Rol', path: '/roles' },
-    { label: 'Torneo', path: '/torneos' },
-    { label: 'Usuarios', path: '/usuarios' }
+    {
+      label: 'Torneos',
+      path: '/torneos',
+      image: 'assets/img/torneo.jpg'
+    },
+    {
+      label: 'Grupos',
+      path: '/grupos',
+      image: 'assets/img/grupo.jpg'
+    },
+    {
+      label: 'Equipos',
+      path: '/equipos',
+      image: 'assets/img/equipo.jpg'
+    },
+    {
+      label: 'Jugadores',
+      path: '/jugadores',
+      image: 'assets/img/jugador.jpg'
+    },
+    {
+      label: 'Árbitros',
+      path: '/arbitros',
+      image: 'assets/img/arbitro.jpg'
+    },
+    {
+      label: 'Usuarios',
+      path: '/usuarios',
+      image: 'assets/img/usuario.jpg'
+    },
+     {
+      label: 'Roles',
+      path: '/roles',
+      image: 'assets/img/rol.jpg'
+    }
   ];
+
 }

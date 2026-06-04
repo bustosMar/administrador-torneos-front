@@ -2,10 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ShellComponent } from './components/shell/shell.component';
-import { CrudPlaceholderComponent } from './components/crud-placeholder/crud-placeholder.component';
-import { UsuarioComponent } from './components/usuario/usuario.component';
-import { UsuarioFormComponent } from './components/usuario-form/usuario-form.component';
-import { UsuarioAppComponent } from './components/usuario-app.component';
+import { GenericCrudComponent } from './components/generic-crud/generic-crud.component';
 import { AuthGuard } from './services/auth.guard';
 
 export const routes: Routes = [
@@ -29,56 +26,38 @@ export const routes: Routes = [
       },
       {
         path: 'usuarios',
-        component: UsuarioAppComponent,
-        children: [
-          {
-            path: '',
-            component: UsuarioComponent
-          },
-          {
-            path: 'create',
-            component: UsuarioFormComponent
-          },
-          {
-            path: 'edit/:id',
-            component: UsuarioFormComponent
-          }
-        ]
+        component: GenericCrudComponent,
+        data: { entity: 'Usuarios', entitySingular: 'Usuarios', endpoint: 'usuarios' }
       },
       {
         path: 'arbitros',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Árbitro' }
+        component: GenericCrudComponent,
+        data: { entity: 'Arbitros', entitySingular: 'Árbitros', endpoint: 'arbitros' }
       },
       {
         path: 'equipos',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Equipo' }
-      },
-      {
-        path: 'goles',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Gol' }
+        component: GenericCrudComponent,
+        data: { entity: 'Equipos', entitySingular: 'Equipos', endpoint: 'equipos' }
       },
       {
         path: 'grupos',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Grupo' }
+        component: GenericCrudComponent,
+        data: { entity: 'Grupos', entitySingular: 'Grupos', endpoint: 'grupos' }
       },
       {
         path: 'jugadores',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Jugador' }
+        component: GenericCrudComponent,
+        data: { entity: 'Jugadores', entitySingular: 'Jugadores', endpoint: 'jugadores' }
       },
       {
         path: 'roles',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Rol' }
+        component: GenericCrudComponent,
+        data: { entity: 'Roles', entitySingular: 'Roles', endpoint: 'roles' }
       },
       {
         path: 'torneos',
-        component: CrudPlaceholderComponent,
-        data: { entity: 'Torneo' }
+        component: GenericCrudComponent,
+        data: { entity: 'Torneos', entitySingular: 'Torneos', endpoint: 'torneos' }
       },
       {
         path: '',
