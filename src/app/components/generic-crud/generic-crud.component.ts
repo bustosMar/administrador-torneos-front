@@ -89,11 +89,14 @@ import Swal from 'sweetalert2';
       <option [ngValue]="null">Seleccione un torneo</option>
 
 
-       <option *ngFor="let torneo of torneos" [value]="torneo.id">
-            {{ torneo.nombre }}
-         </option>
+       <option *ngFor="let torneo of torneos" [ngValue]="torneo.id">
+          {{ torneo.nombre }}
+        </option>
     
     </select>
+    
+
+    
 
   <!-- INPUT -->
   <input
@@ -145,6 +148,7 @@ export class GenericCrudComponent implements OnInit {
     entityName = '';
     entityNameSingular = '';
     torneos: any[] = [];
+    grupos: any[] = [];
 
     endpoint = '';
 
@@ -296,9 +300,19 @@ export class GenericCrudComponent implements OnInit {
 
         if (this.entityName === 'Grupos') {
             this.loadTorneos();
+             this.loadGrupos();
         }
 
 
+    }
+
+
+    private loadGrupos(): void {
+      this.crudService.findAll('grupos').subscribe({
+        next: data => {
+          this.grupos = Array.isArray(data) ? data : [];
+        }
+      });
     }
 
     private loadTorneos(): void {
