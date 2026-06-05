@@ -28,6 +28,11 @@ export class DashboardComponent {
       image: 'assets/img/equipo.jpg'
     },
     {
+      label: 'Equipos en Torneo',
+      path: '/equipos-en-torneo',
+      image: 'assets/img/equiposParticipantes.jpg'
+    },
+    {
       label: 'Jugadores',
       path: '/jugadores',
       image: 'assets/img/jugador.jpg'

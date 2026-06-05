@@ -73,41 +73,69 @@ import Swal from 'sweetalert2';
 
     <div *ngFor="let field of formFields" class="mb-3">
 
+   <!-- LABEL ÚNICO Y DINÁMICO -->
   <label [for]="field" class="form-label">
     {{ formatLabel(field) }}
   </label>
 
-  <!-- SELECT -->
-      <select
-      *ngIf="entityName === 'Grupos' && field === 'torneo'"
-      [id]="field"
-      [name]="field"
-      class="form-select"
-      [(ngModel)]="currentItem.torneo"
-      required>
-    
-      <option [ngValue]="null">Seleccione un torneo</option>
-
-
-       <option *ngFor="let torneo of torneos" [ngValue]="torneo.id">
-          {{ torneo.nombre }}
-        </option>
-    
+    <select
+          *ngIf="entityName === 'EquiposEnTorneo' && field === 'equipo'"
+          [id]="field"
+          [name]="field"
+          class="form-select"
+          [(ngModel)]="currentItem.equipo"
+          required>
+        
+          <option [ngValue]="null">Seleccione un equipo</option>
+        
+          <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
+            {{ equipo.nombre }}
+          </option>
     </select>
-    
+          
+
+      <select
+          *ngIf="entityName === 'EquiposEnTorneo' && field === 'torneo'"
+          [id]="field"
+          [name]="field"
+          class="form-select"
+          [(ngModel)]="currentItem.torneo"
+          required>
+        
+          <option [ngValue]="null">Seleccione un torneo</option>
+        
+          <option *ngFor="let torneo of torneos" [ngValue]="torneo.id">
+            {{ torneo.nombre }}
+          </option>
+    </select>
+
+    <select
+          *ngIf="entityName === 'EquiposEnTorneo' && field === 'grupo'"
+          [id]="field"
+          [name]="field"
+          class="form-select"
+          [(ngModel)]="currentItem.grupo"
+          required>
+        
+          <option [ngValue]="null">Seleccione un grupo</option>
+        
+          <option *ngFor="let grupo of grupos" [ngValue]="grupo.id">
+            {{ grupo.nombre }}
+          </option>
+    </select>
 
     
 
   <!-- INPUT -->
-  <input
-    *ngIf="!(entityName === 'Grupos' && field === 'torneo')"
-    [id]="field"
-    [name]="field"
-    type="text"
-    class="form-control"
-    [(ngModel)]="currentItem[field]"
-    [required]="!excludedFields.includes(field)"
-  />
+      <input
+      *ngIf="entityName !== 'EquiposEnTorneo'"
+      [id]="field"
+      [name]="field"
+      type="text"
+      class="form-control"
+      [(ngModel)]="currentItem[field]"
+      [required]="!excludedFields.includes(field)"
+    />
 
   <!-- VALIDACIÓN GLOBAL (SIN fieldRef) -->
   <div
@@ -149,6 +177,7 @@ export class GenericCrudComponent implements OnInit {
     entityNameSingular = '';
     torneos: any[] = [];
     grupos: any[] = [];
+    equipos: any[] = [];
 
     endpoint = '';
 
@@ -177,6 +206,11 @@ export class GenericCrudComponent implements OnInit {
         ],
         Equipos: [
             'nombre'
+        ],
+        EquiposEnTorneo: [
+            'equipo',
+            'torneo',
+            'grupo'
         ],
         Usuarios: [
             'nombre',
@@ -250,6 +284,8 @@ export class GenericCrudComponent implements OnInit {
             return;
         }
 
+        console.log(this.endpoint);
+
         this.loading = true;
         this.error = false;
 
@@ -297,15 +333,25 @@ export class GenericCrudComponent implements OnInit {
         this.formFields = [...this.columns];
 
         this.showForm = true;
-
-        if (this.entityName === 'Grupos') {
+        if (this.entityName === 'EquiposEnTorneo') {
             this.loadTorneos();
-             this.loadGrupos();
+            this.loadGrupos();
+            this.loadEquipos();
         }
 
 
     }
 
+    private loadEquipos(): void {
+    this.crudService.findAll('equipos').subscribe({
+        next: data => {
+            this.equipos = Array.isArray(data) ? data : [];
+        },
+        error: err => {
+            console.error('Error cargando equipos', err);
+        }
+    });
+}
 
     private loadGrupos(): void {
       this.crudService.findAll('grupos').subscribe({
@@ -333,8 +379,10 @@ export class GenericCrudComponent implements OnInit {
 
         this.formFields = [...this.columns];
 
-        if (this.entityName === 'Grupos') {
+         if (this.entityName === 'EquiposEnTorneo') {
             this.loadTorneos();
+            this.loadGrupos();
+            this.loadEquipos();
         }
 
         this.showForm = true;
