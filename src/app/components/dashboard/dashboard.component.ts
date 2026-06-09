@@ -37,6 +37,11 @@ export class DashboardComponent {
       path: '/jugadores',
       image: 'assets/img/jugador.jpg'
     },
+     {
+      label: 'Jugadores en Equipo',
+      path: '/jugadores-en-equipo',
+      image: 'assets/img/jugadoresenequipo.jpg'
+    },
     {
       label: 'Árbitros',
       path: '/arbitros',

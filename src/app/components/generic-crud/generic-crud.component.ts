@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
       <!-- Tabla de listado -->
       <div *ngIf="!showForm" class="card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">{{ entityName }}</h5>
+        <h5 class="mb-0">{{ formatLabel(entityName) }}</h5>
           <div>
             <button class="btn btn-primary me-2" (click)="onCreateClick()">
               <i class="bi bi-plus"></i> Crear {{ entityNameSingular }}
@@ -32,22 +32,58 @@ import Swal from 'sweetalert2';
             <table class="table table-hover table-striped">
               <thead class="table-light">
                 <tr>
-                  <th *ngFor="let col of columns">{{ col }}</th>
+                  <th *ngFor="let col of columns">
+                      {{ formatLabel(col) }}
+                  </th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of items">
-                  <td *ngFor="let col of columns">{{ getNestedProperty(item, col) }}</td>
-                  <td>
-                    <button class="btn btn-info btn-sm me-2" (click)="onEditClick(item)">
-                      Editar
-                    </button>
-                    <button class="btn btn-danger btn-sm" (click)="onDeleteClick(item.id)">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
+
+              <tr *ngFor="let item of items">
+  
+              <td *ngFor="let col of columns">
+            <ng-container
+                  *ngIf="
+                    entityName === 'EquiposEnTorneo' ||
+                    entityName === 'JugadoresEnEquipo';
+                    else normal
+                  ">
+                
+                  <ng-container
+                    *ngIf="
+                      entityName === 'JugadoresEnEquipo' &&
+                      col === 'jugador';
+                      else defaultValue
+                    ">
+                    {{ item.jugadorNombre }} {{ item.jugadorApellido }}
+                  </ng-container>
+                
+                  <ng-template #defaultValue>
+                    {{ item[col + 'Nombre'] ?? item[col] }}
+                  </ng-template>
+                
+                </ng-container>
+                
+               <ng-template #normal>
+                      {{
+                        col === 'activo'
+                          ? (getNestedProperty(item, col) ? 'Sí' : 'No')
+                          : getNestedProperty(item, col)
+                      }}
+                </ng-template>
+              </td>
+            
+              <td>
+                <button class="btn btn-info btn-sm me-2" (click)="onEditClick(item)">
+                  Editar
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="onDeleteClick(item.id)">
+                  Eliminar
+                </button>
+              </td>
+            
+            </tr>
               </tbody>
             </table>
           </div>
@@ -62,7 +98,7 @@ import Swal from 'sweetalert2';
       <div *ngIf="showForm" class="card shadow-sm">
             <div class="card-header">
               <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{{ editingId ? 'Editar' : 'Crear' }} {{ entityNameSingular }}</h5>
+                <h5 class="mb-0"> {{ editingId ? 'Editar' : 'Crear' }}  {{ formatLabel(entityNameSingular) }}</h5>
                 <button class="btn btn-secondary btn-sm" (click)="onCancelForm()">
                   <i class="bi bi-x"></i> Cancelar
                 </button>
@@ -79,27 +115,48 @@ import Swal from 'sweetalert2';
   </label>
 
     <select
-          *ngIf="entityName === 'EquiposEnTorneo' && field === 'equipo'"
+      *ngIf="(entityName === 'EquiposEnTorneo' && field === 'equipo') || 
+             (entityName === 'JugadoresEnEquipo' && field === 'equipo')"
+      [id]="field"
+      [name]="field"
+      class="form-select"
+      [(ngModel)]="currentItem.equipo"
+      [disabled]="editingId !== null && entityName !== 'JugadoresEnEquipo'"
+      required
+    >
+      <option [ngValue]="null">Seleccione un equipo</option>
+    
+      <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
+        {{ equipo.nombre }}
+      </option>
+    </select>
+
+    <select
+          *ngIf="entityName === 'JugadoresEnEquipo' && field === 'jugador'"
           [id]="field"
           [name]="field"
           class="form-select"
-          [(ngModel)]="currentItem.equipo"
+          [(ngModel)]="currentItem.jugador"
+          [disabled]="editingId !== null"
           required>
         
-          <option [ngValue]="null">Seleccione un equipo</option>
+          <option [ngValue]="null">Seleccione un jugador</option>
         
-          <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
-            {{ equipo.nombre }}
+          <option *ngFor="let jugador of jugadores" [ngValue]="jugador.id">
+            {{ jugador.nombre }} {{ jugador.apellido || '' }}
           </option>
-    </select>
+    </select>    
+    
+
           
 
-      <select
-          *ngIf="entityName === 'EquiposEnTorneo' && field === 'torneo'"
+    <select
+          *ngIf="entityName === 'EquiposEnTorneo' && field === 'torneo' || entityName === 'JugadoresEnEquipo' && field === 'torneo'"
           [id]="field"
           [name]="field"
           class="form-select"
           [(ngModel)]="currentItem.torneo"
+          [disabled]="editingId !== null"
           required>
         
           <option [ngValue]="null">Seleccione un torneo</option>
@@ -127,8 +184,9 @@ import Swal from 'sweetalert2';
     
 
   <!-- INPUT -->
-      <input
-      *ngIf="entityName !== 'EquiposEnTorneo'"
+    <input
+      *ngIf="
+      entityName !== 'EquiposEnTorneo' && entityName !== 'JugadoresEnEquipo'"
       [id]="field"
       [name]="field"
       type="text"
@@ -178,6 +236,7 @@ export class GenericCrudComponent implements OnInit {
     torneos: any[] = [];
     grupos: any[] = [];
     equipos: any[] = [];
+    jugadores: any[] = [];
 
     endpoint = '';
 
@@ -208,7 +267,7 @@ export class GenericCrudComponent implements OnInit {
             'nombre'
         ],
         EquiposEnTorneo: [
-            'equipo',
+           'equipo',
             'torneo',
             'grupo'
         ],
@@ -223,14 +282,13 @@ export class GenericCrudComponent implements OnInit {
             'apellido',
             'fechaNacimiento',
             'foto',
-            'huella',
+            'huella'
         ],
         Roles: [
             'nombre'
         ],
         Grupos: [
-            'nombre',
-            'torneo'
+            'nombre'
         ],
         Goles: [
             'minuto',
@@ -240,7 +298,13 @@ export class GenericCrudComponent implements OnInit {
             'nombre',
             'fechaInicio',
             'fechaFin'
-        ]
+        ],JugadoresEnEquipo: [
+            'jugador',
+            'equipo',
+            'torneo',
+            'activo'
+            
+        ],
     };
 
     constructor(
@@ -318,11 +382,16 @@ export class GenericCrudComponent implements OnInit {
             );
     }
 
-    formatLabel(field: string): string {
-        return field
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase())
-            .trim();
+    formatLabel(text: string): string {
+        if (!text) {
+            return '';
+        }
+    
+        return text
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/^./, str => str.toUpperCase());
     }
 
     onCreateClick(): void {
@@ -333,26 +402,39 @@ export class GenericCrudComponent implements OnInit {
         this.formFields = [...this.columns];
 
         this.showForm = true;
-        if (this.entityName === 'EquiposEnTorneo') {
+        if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo') {
             this.loadTorneos();
             this.loadGrupos();
             this.loadEquipos();
+            this.loadJugadores();
         }
 
 
     }
 
     private loadEquipos(): void {
-    this.crudService.findAll('equipos').subscribe({
-        next: data => {
-            this.equipos = Array.isArray(data) ? data : [];
-        },
-        error: err => {
-            console.error('Error cargando equipos', err);
-        }
-    });
-}
+        this.crudService.findAll('equipos').subscribe({
+            next: data => {
+                this.equipos = Array.isArray(data) ? data : [];
+            },
+            error: err => {
+                console.error('Error cargando equipos', err);
+            }
+        });
+    }
+    
 
+    private loadJugadores(): void {
+        this.crudService.findAll('jugadores').subscribe({
+            next: data => {
+                this.jugadores = Array.isArray(data) ? data : [];
+            },
+            error: err => {
+                console.error('Error cargando jugadores', err);
+            }
+        });
+    }
+    
     private loadGrupos(): void {
       this.crudService.findAll('grupos').subscribe({
         next: data => {
@@ -379,10 +461,11 @@ export class GenericCrudComponent implements OnInit {
 
         this.formFields = [...this.columns];
 
-         if (this.entityName === 'EquiposEnTorneo') {
+         if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo') {
             this.loadTorneos();
             this.loadGrupos();
             this.loadEquipos();
+            this.loadJugadores();
         }
 
         this.showForm = true;

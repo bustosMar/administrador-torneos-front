@@ -65,6 +65,11 @@ export const routes: Routes = [
         data: { entity: 'EquiposEnTorneo', entitySingular: 'Equipos en Torneo', endpoint: 'equipos-en-torneo' }
       },
       {
+        path: 'jugadores-en-equipo',
+        component: GenericCrudComponent,
+        data: { entity: 'JugadoresEnEquipo', entitySingular: 'Jugadores en Equipo', endpoint: 'jugadores-en-equipo' }
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'
