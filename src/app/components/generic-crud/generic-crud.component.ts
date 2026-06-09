@@ -185,14 +185,19 @@ import Swal from 'sweetalert2';
 
   <!-- INPUT -->
     <input
-      *ngIf="
-      entityName !== 'EquiposEnTorneo' && entityName !== 'JugadoresEnEquipo'"
-      [id]="field"
-      [name]="field"
-      type="text"
-      class="form-control"
-      [(ngModel)]="currentItem[field]"
-      [required]="!excludedFields.includes(field)"
+          *ngIf="
+            entityName !== 'EquiposEnTorneo' &&
+            (
+              entityName !== 'JugadoresEnEquipo' ||
+              field === 'activo'
+            )
+          "
+          [id]="field"
+          [name]="field"
+          type="text"
+          class="form-control"
+          [(ngModel)]="currentItem[field]"
+          [required]="!excludedFields.includes(field)"
     />
 
   <!-- VALIDACIÓN GLOBAL (SIN fieldRef) -->
@@ -488,53 +493,40 @@ export class GenericCrudComponent implements OnInit {
                 this.endpoint,
                 this.currentItem
             );
-
-        observable.subscribe({
-            next: (result) => {
-
-                if (this.editingId) {
-
-                    const index = this.items.findIndex(
-                        item => item.id === this.editingId
-                    );
-
-                    if (index > -1) {
-                        this.items[index] = result;
-                    }
-
+            observable.subscribe({
+                next: () => {
+            
                     Swal.fire(
-                        'Actualizado',
-                        `${this.entityNameSingular} actualizado correctamente`,
+                        this.editingId ? 'Actualizado' : 'Creado',
+                        `${this.entityNameSingular} ${
+                            this.editingId
+                                ? 'actualizado'
+                                : 'creado'
+                        } correctamente`,
                         'success'
                     );
-
-                } else {
-
-                    this.items.push(result);
-
+            
+                    this.showForm = false;
+                    this.editingId = null;
+                    this.currentItem = {};
+                    this.submitting = false;
+            
+                    // Recargar la tabla desde el backend
+                    this.loadData();
+                },
+                error: (err) => {
+            
+                    console.error('Error al guardar:', err);
+            
                     Swal.fire(
-                        'Creado',
-                        `${this.entityNameSingular} creado correctamente`,
-                        'success'
+                        'Error',
+                        `No se pudo guardar ${this.entityNameSingular}`,
+                        'error'
                     );
+            
+                    this.submitting = false;
                 }
-
-                this.showForm = false;
-                this.submitting = false;
-            },
-            error: (err) => {
-
-                console.error('Error al guardar:', err);
-
-                Swal.fire(
-                    'Error',
-                    `No se pudo guardar ${this.entityNameSingular}`,
-                    'error'
-                );
-
-                this.submitting = false;
-            }
-        });
+            });
     }
 
     onDeleteClick(id: number): void {
