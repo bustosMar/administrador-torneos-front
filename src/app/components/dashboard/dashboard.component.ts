@@ -56,7 +56,7 @@ export class DashboardComponent {
       label: 'Roles',
       path: '/roles',
       image: 'assets/img/rol.jpg'
-    }
+    },
   ];
 
 }

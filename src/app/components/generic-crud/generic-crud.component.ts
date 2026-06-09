@@ -309,7 +309,7 @@ export class GenericCrudComponent implements OnInit {
             'torneo',
             'activo'
             
-        ],
+        ]
     };
 
     constructor(
