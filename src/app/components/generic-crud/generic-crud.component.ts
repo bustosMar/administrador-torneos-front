@@ -132,6 +132,23 @@ import Swal from 'sweetalert2';
     </select>
 
     <select
+      *ngIf="entityName === 'Usuarios' && field === 'rol'"
+      [id]="field"
+      [name]="field"
+      class="form-select"
+      [(ngModel)]="currentItem.rol"
+      required
+    >
+      <option [ngValue]="null">Seleccione un Rol</option>
+    
+      <option *ngFor="let rol of roles" [ngValue]="rol.id">
+        {{ rol.nombre }}
+      </option>
+    </select>
+
+
+
+    <select
           *ngIf="entityName === 'JugadoresEnEquipo' && field === 'jugador'"
           [id]="field"
           [name]="field"
@@ -184,9 +201,13 @@ import Swal from 'sweetalert2';
     
 
   <!-- INPUT -->
-    <input
+      <input
           *ngIf="
             entityName !== 'EquiposEnTorneo' &&
+            !(
+              entityName === 'Usuarios' &&
+              field === 'rol'
+            ) &&
             (
               entityName !== 'JugadoresEnEquipo' ||
               field === 'activo'
@@ -242,6 +263,7 @@ export class GenericCrudComponent implements OnInit {
     grupos: any[] = [];
     equipos: any[] = [];
     jugadores: any[] = [];
+    roles: any[] = [];
 
     endpoint = '';
 
@@ -281,6 +303,7 @@ export class GenericCrudComponent implements OnInit {
             'apellido',
             'nombreUsuario',
             'password',
+            'rol',
         ],
         Jugadores: [
             'nombre',
@@ -407,11 +430,12 @@ export class GenericCrudComponent implements OnInit {
         this.formFields = [...this.columns];
 
         this.showForm = true;
-        if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo') {
+        if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo' || this.entityName === 'Usuarios') {
             this.loadTorneos();
             this.loadGrupos();
             this.loadEquipos();
             this.loadJugadores();
+            this.loadRoles();
         }
 
 
@@ -428,6 +452,16 @@ export class GenericCrudComponent implements OnInit {
         });
     }
     
+     private loadRoles(): void {
+        this.crudService.findAll('roles').subscribe({
+            next: data => {
+                this.roles = Array.isArray(data) ? data : [];
+            },
+            error: err => {
+                console.error('Error cargando roles', err);
+            }
+        });
+    }
 
     private loadJugadores(): void {
         this.crudService.findAll('jugadores').subscribe({
@@ -444,6 +478,9 @@ export class GenericCrudComponent implements OnInit {
       this.crudService.findAll('grupos').subscribe({
         next: data => {
           this.grupos = Array.isArray(data) ? data : [];
+        },
+        error: err => {
+                console.error('Error cargando grupos', err);
         }
       });
     }
@@ -466,11 +503,12 @@ export class GenericCrudComponent implements OnInit {
 
         this.formFields = [...this.columns];
 
-         if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo') {
+         if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo' || this.entityName === 'Usuarios') {
             this.loadTorneos();
             this.loadGrupos();
             this.loadEquipos();
             this.loadJugadores();
+            this.loadRoles();
         }
 
         this.showForm = true;

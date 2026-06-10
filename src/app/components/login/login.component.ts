@@ -15,7 +15,8 @@ export class LoginComponent {
 
   loginForm = this.formBuilder.group({
     nombreUsuario: ['', Validators.required],
-    password: ['', Validators.required]
+    password: ['', Validators.required],
+    clave: ['', Validators.required]
   });
 
   constructor(
@@ -26,17 +27,17 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      Swal.fire('Error', 'Debe completar usuario y contraseña.', 'warning');
+      Swal.fire('Error', 'Debe completar usuario, contraseña y clave', 'warning');
       return;
     }
 
-    this.authService.login(this.loginForm.value as { nombreUsuario: string; password: string }).subscribe({
+    this.authService.login(this.loginForm.value as { nombreUsuario: string; password: string; clave: string }).subscribe({
       next: () => {
         Swal.fire('Bienvenido', 'Ingreso correcto, redirigiendo...', 'success');
         this.router.navigate(['/dashboard']);
       },
       error: () => {
-        Swal.fire('Error', 'Usuario o contraseña incorrectos.', 'error');
+        Swal.fire('Error', 'Usuario, contraseña o clave incorrectos.', 'error');
       }
     });
   }

@@ -48,14 +48,14 @@ export class DashboardComponent {
       image: 'assets/img/arbitro.jpg'
     },
     {
-      label: 'Usuarios',
-      path: '/usuarios',
-      image: 'assets/img/usuario.jpg'
-    },
-     {
       label: 'Roles',
       path: '/roles',
       image: 'assets/img/rol.jpg'
+    },
+    {
+      label: 'Usuarios',
+      path: '/usuarios',
+      image: 'assets/img/usuario.jpg'
     },
   ];
 
