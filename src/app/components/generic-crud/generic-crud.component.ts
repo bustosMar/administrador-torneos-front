@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component,OnInit,ViewChild,ElementRef,OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -109,10 +109,10 @@ import Swal from 'sweetalert2';
 
     <div *ngFor="let field of formFields" class="mb-3">
 
-   <!-- LABEL ÚNICO Y DINÁMICO -->
-  <label [for]="field" class="form-label">
-    {{ formatLabel(field) }}
-  </label>
+       <!-- LABEL ÚNICO Y DINÁMICO -->
+      <label [for]="field" class="form-label">
+        {{ formatLabel(field) }}
+      </label>
 
     <select
       *ngIf="(entityName === 'EquiposEnTorneo' && field === 'equipo') || 
@@ -198,16 +198,26 @@ import Swal from 'sweetalert2';
           </option>
     </select>
 
-    
+    <input
+          *ngIf="
+            entityName === 'Jugadores' &&
+            field === 'fechaNacimiento'
+          "
+          [id]="field"
+          [name]="field"
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentItem[field]"
+          required
+    />
 
   <!-- INPUT -->
       <input
           *ngIf="
             entityName !== 'EquiposEnTorneo' &&
-            !(
-              entityName === 'Usuarios' &&
-              field === 'rol'
-            ) &&
+            !(entityName === 'Usuarios' && field === 'rol') &&
+            !(entityName === 'Jugadores' && field === 'foto') &&
+            !(entityName === 'Jugadores' && field === 'fechaNacimiento') &&
             (
               entityName !== 'JugadoresEnEquipo' ||
               field === 'activo'
@@ -219,7 +229,63 @@ import Swal from 'sweetalert2';
           class="form-control"
           [(ngModel)]="currentItem[field]"
           [required]="!excludedFields.includes(field)"
-    />
+        />
+
+
+    <div
+      *ngIf="
+        entityName === 'Jugadores' &&
+        field === 'foto'
+      "
+      class="mt-2"
+    >
+
+  <video
+    #video
+    autoplay
+    playsinline
+    width="300"
+    class="border rounded">
+  </video>
+
+  <canvas
+    #canvas
+    style="display:none">
+  </canvas>
+
+  <div class="mt-2">
+
+    <button
+      type="button"
+      class="btn btn-primary me-2"
+      (click)="iniciarCamara()">
+
+      Abrir cámara
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="capturarFoto()">
+
+      Tomar foto
+    </button>
+
+  </div>
+
+  <div
+    *ngIf="fotoPreview"
+    class="mt-3">
+
+    <img
+      [src]="fotoPreview"
+      class="img-thumbnail"
+      width="300">
+
+  </div>
+
+</div>
+    
 
   <!-- VALIDACIÓN GLOBAL (SIN fieldRef) -->
   <div
@@ -255,7 +321,7 @@ import Swal from 'sweetalert2';
     }
   `]
 })
-export class GenericCrudComponent implements OnInit {
+export class GenericCrudComponent implements OnInit, OnDestroy {
 
     entityName = '';
     entityNameSingular = '';
@@ -264,6 +330,16 @@ export class GenericCrudComponent implements OnInit {
     equipos: any[] = [];
     jugadores: any[] = [];
     roles: any[] = [];
+
+    @ViewChild('video')
+    video!: ElementRef<HTMLVideoElement>;
+    
+    @ViewChild('canvas')
+    canvas!: ElementRef<HTMLCanvasElement>;
+    
+    cameraStream!: MediaStream;
+    
+    fotoPreview: string | null = null;
 
     endpoint = '';
 
@@ -427,6 +503,8 @@ export class GenericCrudComponent implements OnInit {
 
         this.currentItem = {};
 
+        this.fotoPreview = null;
+
         this.formFields = [...this.columns];
 
         this.showForm = true;
@@ -501,6 +579,8 @@ export class GenericCrudComponent implements OnInit {
 
         this.currentItem = { ...item };
 
+        this.fotoPreview =this.currentItem.foto || null;
+
         this.formFields = [...this.columns];
 
          if (this.entityName === 'EquiposEnTorneo' || this.entityName === 'JugadoresEnEquipo' || this.entityName === 'Usuarios') {
@@ -514,58 +594,114 @@ export class GenericCrudComponent implements OnInit {
         this.showForm = true;
     }
 
-    onSubmitForm(): void {
-        if (!this.currentItem) {
-            return;
-        }
+    async iniciarCamara(): Promise<void> {
 
-        this.submitting = true;
+    try {
 
-        const observable = this.editingId
-            ? this.crudService.update(
-                this.endpoint,
-                this.editingId,
-                this.currentItem
-            )
-            : this.crudService.create(
-                this.endpoint,
-                this.currentItem
-            );
-            observable.subscribe({
-                next: () => {
-            
-                    Swal.fire(
-                        this.editingId ? 'Actualizado' : 'Creado',
-                        `${this.entityNameSingular} ${
-                            this.editingId
-                                ? 'actualizado'
-                                : 'creado'
-                        } correctamente`,
-                        'success'
-                    );
-            
-                    this.showForm = false;
-                    this.editingId = null;
-                    this.currentItem = {};
-                    this.submitting = false;
-            
-                    // Recargar la tabla desde el backend
-                    this.loadData();
-                },
-                error: (err) => {
-            
-                    console.error('Error al guardar:', err);
-            
-                    Swal.fire(
-                        'Error',
-                        `No se pudo guardar ${this.entityNameSingular}`,
-                        'error'
-                    );
-            
-                    this.submitting = false;
-                }
+        this.cameraStream =
+            await navigator.mediaDevices.getUserMedia({
+                video: true
             });
+
+        this.video.nativeElement.srcObject =
+            this.cameraStream;
+
+    } catch (error) {
+
+        console.error(error);
+
+        Swal.fire(
+            'Error',
+            'No se pudo acceder a la cámara',
+            'error'
+        );
     }
+}
+
+capturarFoto(): void {
+
+    const video =
+        this.video.nativeElement;
+
+    const canvas =
+        this.canvas.nativeElement;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx =
+        canvas.getContext('2d');
+
+    if (!ctx) {
+        return;
+    }
+
+    ctx.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    const imagen =
+        canvas.toDataURL('image/jpeg');
+
+    this.fotoPreview = imagen;
+
+    this.currentItem.foto = imagen;
+}
+
+cerrarCamara(): void {
+
+    if (this.cameraStream) {
+
+        this.cameraStream
+            .getTracks()
+            .forEach(track => track.stop());
+    }
+}
+
+ngOnDestroy(): void {
+
+    this.cerrarCamara();
+}
+
+onSubmitForm(): void {
+    if (!this.currentItem) return;
+
+    const payload = { ...this.currentItem }; // 👈 CLAVE: NO mutar original
+
+    if (this.entityName === 'Jugadores' && payload.fechaNacimiento) {
+
+        const [anio, mes, dia] = payload.fechaNacimiento.split('-');
+
+        payload.fechaNacimiento = `${dia}/${mes}/${anio}`;
+    }
+
+    this.submitting = true;
+
+    const observable = this.editingId
+        ? this.crudService.update(this.endpoint, this.editingId, payload)
+        : this.crudService.create(this.endpoint, payload);
+
+    observable.subscribe({
+        next: () => {
+            Swal.fire('OK', 'Guardado correctamente', 'success');
+
+            this.showForm = false;
+            this.editingId = null;
+            this.currentItem = {};
+            this.submitting = false;
+
+            this.loadData();
+        },
+        error: (err) => {
+            console.error(err);
+            this.submitting = false;
+        }
+    });
+}
 
     onDeleteClick(id: number): void {
 
@@ -617,9 +753,13 @@ export class GenericCrudComponent implements OnInit {
     }
 
     onCancelForm(): void {
+
+        this.cerrarCamara();
         this.showForm = false;
         this.editingId = null;
         this.currentItem = {};
+        this.fotoPreview = null;
+
     }
 
     onBack(): void {
