@@ -43,35 +43,56 @@ import Swal from 'sweetalert2';
               <tr *ngFor="let item of items">
   
               <td *ngFor="let col of columns">
-            <ng-container
-                  *ngIf="
-                    entityName === 'EquiposEnTorneo' ||
-                    entityName === 'JugadoresEnEquipo';
-                    else normal
-                  ">
-                
-                  <ng-container
-                    *ngIf="
-                      entityName === 'JugadoresEnEquipo' &&
-                      col === 'jugador';
-                      else defaultValue
-                    ">
-                    {{ item.jugadorNombre }} {{ item.jugadorApellido }}
-                  </ng-container>
-                
-                  <ng-template #defaultValue>
-                    {{ item[col + 'Nombre'] ?? item[col] }}
-                  </ng-template>
+                <ng-container
+                      *ngIf="
+                        entityName === 'EquiposEnTorneo' ||
+                        entityName === 'JugadoresEnEquipo';
+                        else normal
+                      ">
+                    
+                      <ng-container
+                        *ngIf="
+                          entityName === 'JugadoresEnEquipo' &&
+                          col === 'jugador';
+                          else defaultValue
+                        ">
+                        {{ item.jugadorNombre }} {{ item.jugadorApellido }}
+                      </ng-container>
+                    
+                      <ng-template #defaultValue>
+                        {{ item[col + 'Nombre'] ?? item[col] }}
+                      </ng-template>
                 
                 </ng-container>
                 
                <ng-template #normal>
-                      {{
-                        col === 'activo'
-                          ? (getNestedProperty(item, col) ? 'Sí' : 'No')
-                          : getNestedProperty(item, col)
-                      }}
+
+                <!-- Mostrar imágenes -->
+                <ng-container
+                  *ngIf="
+                    entityName === 'Jugadores' &&
+                    (col === 'foto' || col === 'huella');
+                    else valorNormal
+                  ">
+              
+                 <img
+                  *ngIf="getNestedProperty(item, col)"
+                  [src]="buildImageSrc(getNestedProperty(item, col))"
+                  class="img-thumbnail"
+                  width="100"
+                  alt="Imagen">
+              
+                </ng-container>
+              
+                <ng-template #valorNormal>
+                  {{
+                    col === 'activo'
+                      ? (getNestedProperty(item, col) ? 'Sí' : 'No')
+                      : getNestedProperty(item, col)
+                  }}
                 </ng-template>
+              
+              </ng-template>
               </td>
             
               <td>
@@ -212,7 +233,7 @@ import Swal from 'sweetalert2';
     />
 
   <!-- INPUT -->
-      <input
+    <input
           *ngIf="
             entityName !== 'EquiposEnTorneo' &&
             !(entityName === 'Usuarios' && field === 'rol') &&
@@ -229,62 +250,81 @@ import Swal from 'sweetalert2';
           class="form-control"
           [(ngModel)]="currentItem[field]"
           [required]="!excludedFields.includes(field)"
-        />
+          [disabled]="
+            (entityName === 'Jugadores' && field === 'huella' && editingId !== null)
+          "
+      />
+ 
+        
+    
+      <div
+        *ngIf="
+          entityName === 'Jugadores' &&
+          field === 'foto'
+        "
+        class="mt-2"
+      >
 
+      
+      
+        <!-- Crear -->
+        <ng-container *ngIf="editingId === null">
+      
+          <video
+            #video
+            autoplay
+            playsinline
+            width="300"
+            class="border rounded">
+          </video>
+      
+          <canvas
+            #canvas
+            style="display:none">
+          </canvas>
+      
+          <div class="mt-2">
+      
+            <button
+              type="button"
+              class="btn btn-primary me-2"
+              (click)="iniciarCamara()">
+      
+              Abrir cámara
+            </button>
+      
+            <button
+              type="button"
+              class="btn btn-success"
+              (click)="capturarFoto()">
+      
+              Tomar foto
+            </button>
+      
+          </div>
+      
+        </ng-container>
+      
+        <!-- Editar -->
+        <ng-container *ngIf="editingId !== null">
+      
+      
+      
+        </ng-container>
 
-    <div
-      *ngIf="
-        entityName === 'Jugadores' &&
-        field === 'foto'
-      "
-      class="mt-2"
-    >
-
-  <video
-    #video
-    autoplay
-    playsinline
-    width="300"
-    class="border rounded">
-  </video>
-
-  <canvas
-    #canvas
-    style="display:none">
-  </canvas>
-
-  <div class="mt-2">
-
-    <button
-      type="button"
-      class="btn btn-primary me-2"
-      (click)="iniciarCamara()">
-
-      Abrir cámara
-    </button>
-
-    <button
-      type="button"
-      class="btn btn-success"
-      (click)="capturarFoto()">
-
-      Tomar foto
-    </button>
-
-  </div>
-
-  <div
-    *ngIf="fotoPreview"
-    class="mt-3">
-
-    <img
-      [src]="fotoPreview"
-      class="img-thumbnail"
-      width="300">
-
-  </div>
-
-</div>
+      
+        <div
+          *ngIf="fotoPreview"
+          class="mt-3">
+      
+          <img
+            [src]="fotoPreview"
+            class="img-thumbnail"
+            width="300">
+      
+        </div>
+      
+      </div>
     
 
   <!-- VALIDACIÓN GLOBAL (SIN fieldRef) -->
@@ -498,6 +538,21 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
             .replace(/^./, str => str.toUpperCase());
     }
 
+    buildImageSrc(valor: string): string {
+
+        if (!valor) {
+            return '';
+        }
+    
+        // Ya viene con data:image
+        if (valor.startsWith('data:image')) {
+            return valor;
+        }
+    
+        // Base64 puro
+        return `data:image/jpeg;base64,${valor}`;
+    }
+
     onCreateClick(): void {
         this.editingId = null;
 
@@ -577,7 +632,10 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     onEditClick(item: any): void {
         this.editingId = item.id;
 
-        this.currentItem = { ...item };
+        this.currentItem = {
+        ...item,
+        fechaNacimiento: this.toInputDate(item.fechaNacimiento)
+        };
 
         this.fotoPreview =this.currentItem.foto || null;
 
@@ -765,4 +823,17 @@ onSubmitForm(): void {
     onBack(): void {
         this.router.navigate(['/dashboard']);
     }
+
+      private toInputDate(date: string): string {
+      if (!date) return '';
+  
+      // si viene como DD/MM/YYYY
+      if (date.includes('/')) {
+          const [day, month, year] = date.split('/');
+          return `${year}-${month}-${day}`;
+      }
+  
+      // si ya viene como YYYY-MM-DD
+      return date.slice(0, 10);
+  }
 }
