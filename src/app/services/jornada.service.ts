@@ -14,4 +14,9 @@ export class JornadaService {
     return this.http.get<any>(`${this.apiUrl}/${entity}/${id}`);
   }
 
+   guardarJornada(entity: string, item: any): Observable<any> {
+    return this.http.post<void>(`${this.apiUrl}/${entity}`,item);
+  }
+
+
 }

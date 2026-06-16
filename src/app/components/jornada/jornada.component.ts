@@ -88,18 +88,26 @@ export class JornadaComponent implements OnInit {
     });
   }
 
-  guardarJornada() {
-      this.jornadaService.generarJornada('jornadas',
-                      this.torneoId).subscribe({
-        next: (data: any) => {
-          this.jornadas = Array.isArray(data)
-            ? data
-            : (data?._embedded?.grupos ?? []);
-        },
-        error: () => {
-          this.grupos = [];
-        }
-      });
+     guardarJornada() {
+    
+      const payload = this.jornadas.map(j => ({
+        idTorneo: j.idTorneo,
+        idGrupo: j.idGrupo,
+        idLocal: j.idLocal,          // 👈 DEBE ser ID, no nombre
+        idVisitante: j.idVisitante,  // 👈 DEBE ser ID
+        fecha: j.fecha,
+        hora: j.hora
+      }));
+    
+      this.jornadaService.guardarJornada("partidos/jornada", payload)
+        .subscribe({
+          next: () => {
+            alert('OK');
+          },
+          error: (err) => {
+            console.error(err);
+          }
+        });
     }
 
   
