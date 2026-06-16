@@ -1,80 +1,88 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
+
         <a class="navbar-brand" href="#">Administrador</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+        <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
+
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <!-- DASHBOARD -->
                 <li class="nav-item">
                     <a class="nav-link" [routerLink]="['/dashboard']">Dashboard</a>
                 </li>
 
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                Competencia
-            </a>
+                <!-- ✔️ COMPETENCIA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="javascript:void(0)"
+                       id="competenciaDropdown"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        Competencia
+                    </a>
 
-        <ul class="dropdown-menu">
-            <li>
-                <a class="dropdown-item" [routerLink]="['/jornada']">
-                    Jornada
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/resultados']">
-                    Resultados
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/tabla-posiciones-general']">
-                    Tabla de posiciones General
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/tabla-posiciones-grupo']">
-                    Tabla de posiciones por Grupo
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/tabla-goleadores']">
-                    Tabla de goleadores
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/estadisticas']">
-                    Estadísticas
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" [routerLink]="['/sanciones']">
-                    Sanciones
-                </a>
-            </li>
-        </ul>
-    </li>
+                    <ul class="dropdown-menu" aria-labelledby="competenciaDropdown">
+
+                        <li><a class="dropdown-item" [routerLink]="['/jornada']">Jornada</a></li>
+
+                        <li><a class="dropdown-item" [routerLink]="['/resultados']">Resultados</a></li>
+
+                        <li><a class="dropdown-item" [routerLink]="['/tabla-posiciones-general']">Tabla de posiciones General</a></li>
+
+                        <li><a class="dropdown-item" [routerLink]="['/tabla-posiciones-grupo']">Tabla de posiciones por Grupo</a></li>
+
+                        <li><a class="dropdown-item" [routerLink]="['/tabla-goleadores']">Tabla de goleadores</a></li>
+
+                        <li><a class="dropdown-item" [routerLink]="['/sanciones']">Sanciones</a></li>
+
+                    </ul>
+                </li>
+
                
                 <li class="nav-item dropdown">
-            
-                    <ul class="dropdown-menu">
+                  
+
+                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+
                         <li><a class="dropdown-item" [routerLink]="['/arbitros']">Árbitro</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/equipos']">Equipo</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/equipos-en-torneo']">Equipos En Torneo</a></li>
-                         <li><a class="dropdown-item" [routerLink]="['/jugadores-en-equipo']">Jugadores en Equipo</a></li>
+                        <li><a class="dropdown-item" [routerLink]="['/jugadores-en-equipo']">Jugadores en Equipo</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/grupos']">Grupo</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/jugadores']">Jugador</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/torneos']">Torneo</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/usuarios']">Usuarios</a></li>
                         <li><a class="dropdown-item" [routerLink]="['/roles']">Rol</a></li>
+
                     </ul>
                 </li>
+
             </ul>
+
+            <!-- USUARIO -->
             <div class="d-flex align-items-center">
-                <span class="me-3">{{ authService.getUsername() || 'Usuario' }}</span>
-                <button class="btn btn-outline-secondary btn-sm" type="button" (click)="logout()">Cerrar sesión</button>
+                <span class="me-3">
+                    {{ authService.getUsername() || 'Usuario' }}
+                </span>
+
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        (click)="logout()">
+                    Cerrar sesión
+                </button>
             </div>
+
         </div>
     </div>
 </nav>

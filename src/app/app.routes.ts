@@ -4,6 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ShellComponent } from './components/shell/shell.component';
 import { GenericCrudComponent } from './components/generic-crud/generic-crud.component';
 import { AuthGuard } from './services/auth.guard';
+import { JornadaComponent } from './components/jornada/jornada.component';
 
 export const routes: Routes = [
   {
@@ -68,6 +69,10 @@ export const routes: Routes = [
         path: 'jugadores-en-equipo',
         component: GenericCrudComponent,
         data: { entity: 'JugadoresEnEquipo', entitySingular: 'Jugadores en Equipo', endpoint: 'jugadores-en-equipo' }
+      },
+      {
+        path: 'jornada',
+        component: JornadaComponent
       },
       {
         path: '',
