@@ -29,7 +29,6 @@ export class JornadaComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarTorneos();
-    this.cargarGrupos();
   }
 
   cargarTorneos(): void {
@@ -49,20 +48,7 @@ export class JornadaComponent implements OnInit {
     });
   }
 
-  cargarGrupos(): void {
-    this.crudService.findAll('grupos').subscribe({
-      next: (data: any) => {
 
-        this.grupos = Array.isArray(data)
-          ? data
-          : (data?._embedded?.grupos ?? []);
-
-      },
-      error: () => {
-        this.grupos = [];
-      }
-    });
-  }
 
   generarJornada(): void {
 

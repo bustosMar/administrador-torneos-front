@@ -10,8 +10,11 @@ export class JornadaService {
 
   constructor(private http: HttpClient) {}
 
-  generarJornada(entity: string, id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${entity}/${id}`);
+   generarJornada(entity: string, id: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${entity}/${id}/calendario`,
+      {} // 👈 body vacío obligatorio
+    );
   }
 
    guardarJornada(entity: string, item: any): Observable<any> {
