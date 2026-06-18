@@ -20,6 +20,7 @@ export class JornadaComponent implements OnInit {
   torneos: any[] = [];
   grupos: any[] = [];
   jornadas: any[] = [];
+  partidos: any[] = [];
 
   constructor(
     private crudService: CrudService,
@@ -102,30 +103,20 @@ export class JornadaComponent implements OnInit {
 
   guardarJornada(): void {
 
-    if (this.jornadas.length === 0) {
+    if (!this.torneoId) {
 
       Swal.fire(
         'Atención',
-        'No existen jornadas para guardar',
+        'Seleccione un torneo',
         'warning'
       );
 
       return;
     }
 
-    const payload = this.jornadas.map(j => ({
-      idTorneo: j.idTorneo,
-      idGrupo: j.idGrupo,
-      idLocal: j.idLocal,
-      idVisitante: j.idVisitante,
-      fecha: this.formatDate(j.fecha),
-      hora: j.hora
-    }));
 
-    console.log('PAYLOAD:', payload);
-
-    this.jornadaService
-      .guardarJornada('partidos/jornada', payload)
+      this.jornadaService
+      .generarPartidos('jornadas',this.torneoId)
       .subscribe({
         next: () => {
 

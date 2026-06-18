@@ -17,8 +17,11 @@ export class JornadaService {
     );
   }
 
-   guardarJornada(entity: string, item: any): Observable<any> {
-    return this.http.post<void>(`${this.apiUrl}/${entity}`,item);
+   generarPartidos(entity: string, id: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${entity}/${id}/jornadas/siguiente`,
+      {} // 👈 body vacío obligatorio
+    );
   }
 
 

@@ -58,11 +58,9 @@
           <tr>
             <th>Torneo</th>
             <th>Grupo</th>
-            <th>Local</th>
-            <th>Visitante</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th width="120">Acciones</th>
+            <th>ESTADO</th>
+            <th>JORNADA</th>
+            <th>Fecha Programada</th>
           </tr>
 
         </thead>
@@ -75,50 +73,12 @@
 
             <td>{{ j.grupo }}</td>
 
-            <td>
-              <input
-                class="form-control"
-                type="text"
-                [(ngModel)]="j.local"
-                [name]="'local' + i">
-            </td>
+            <td>{{ j.estado }}</td>
 
-            <td>
-              <input
-                class="form-control"
-                type="text"
-                [(ngModel)]="j.visitante"
-                [name]="'visitante' + i">
-            </td>
+            <td>{{ j.numeroJornada }}</td>
 
-            <td>
-              <input
-                class="form-control"
-                type="date"
-                [(ngModel)]="j.fecha"
-                [name]="'fecha' + i">
-            </td>
-
-            <td>
-              <input
-                class="form-control"
-                type="time"
-                [(ngModel)]="j.hora"
-                [name]="'hora' + i">
-            </td>
-
-            <td class="text-center">
-
-              <button
-                type="button"
-                class="btn btn-danger btn-sm"
-                (click)="eliminarJornada(i)">
-
-                <i class="bi bi-trash"></i>
-
-              </button>
-
-            </td>
+            <td>{{ j.fechaProgramada }}</td>           
+       
 
           </tr>
 
@@ -133,8 +93,7 @@
           (click)="guardarJornada()">
 
           <i class="bi bi-save"></i>
-          Guardar Jornada
-
+          Generar Partidos Para la Jornada
         </button>
 
       </div>
