@@ -71,6 +71,16 @@ export const routes: Routes = [
         data: { entity: 'JugadoresEnEquipo', entitySingular: 'Jugadores en Equipo', endpoint: 'jugadores-en-equipo' }
       },
       {
+        path: 'categorias',
+        component: GenericCrudComponent,
+        data: { entity: 'Categorias', entitySingular: 'Categoría', endpoint: 'categorias' }
+      },
+      {
+        path: 'categoria-torneo',
+        component: GenericCrudComponent,
+        data: { entity: 'CategoriaTorneo', entitySingular: 'Categoría Torneo', endpoint: 'categoria-torneo' }
+      },
+      {
         path: 'jornada',
         component: JornadaComponent
       },

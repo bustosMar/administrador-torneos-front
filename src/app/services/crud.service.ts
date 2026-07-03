@@ -14,6 +14,10 @@ export class CrudService {
     return this.http.get<any[]>(`${this.apiUrl}/${entity}`);
   }
 
+   search(entity: string, query: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${entity}/search?q=${encodeURIComponent(query)}`);
+  }
+
   findById(entity: string, id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${entity}/${id}`);
   }

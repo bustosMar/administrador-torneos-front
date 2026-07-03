@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { CrudService } from '../../services/crud.service';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -35,6 +36,16 @@ import Swal from 'sweetalert2';
         <div class="card-body">
           <div *ngIf="loading" class="alert alert-info">Cargando datos...</div>
           <div *ngIf="error" class="alert alert-danger">{{ errorMessage }}</div>
+
+          <!-- Buscador -->
+          <div class="mb-3" *ngIf="!loading && allItems.length > 0">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar..."
+              [(ngModel)]="searchQuery"
+              (keyup)="onSearch(searchQuery)">
+          </div>
 
           <div *ngIf="!loading && items.length > 0" class="table-responsive">
             <table class="table table-hover table-striped">
@@ -94,7 +105,7 @@ import Swal from 'sweetalert2';
 
                       <ng-template #valorNormal>
                         {{
-                          col === 'activo'
+                          col === 'activo' || col === 'activa'
                             ? (getNestedProperty(item, col) ? 'Sí' : 'No')
                             : col === 'huella'
                               ? (getNestedProperty(item, col) ? 'Capturada' : 'Sin capturar')
@@ -118,6 +129,36 @@ import Swal from 'sweetalert2';
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Paginación y info -->
+          <div *ngIf="!loading && items.length > 0" class="mt-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="text-muted small">
+                Mostrando {{ (currentPage - 1) * pageSize + 1 }} 
+                a {{ getMinValue(currentPage * pageSize, totalItems) }} 
+                de {{ totalItems }} registros
+              </div>
+              <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm">
+                  <li class="page-item" [ngClass]="{ disabled: currentPage === 1 }">
+                    <button class="page-link" (click)="prevPage()" [disabled]="currentPage === 1">
+                      Anterior
+                    </button>
+                  </li>
+                  <li class="page-item active">
+                    <span class="page-link">
+                      Página {{ currentPage }} de {{ getTotalPages() }}
+                    </span>
+                  </li>
+                  <li class="page-item" [ngClass]="{ disabled: currentPage >= getTotalPages() }">
+                    <button class="page-link" (click)="nextPage()" [disabled]="currentPage >= getTotalPages()">
+                      Siguiente
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
           </div>
 
           <div *ngIf="!loading && items.length === 0" class="alert alert-warning">
@@ -222,8 +263,29 @@ import Swal from 'sweetalert2';
                 </option>
               </select>
 
+              <select
+                *ngIf="field === 'activo' || field === 'activa'"
+                [id]="field"
+                [name]="field"
+                class="form-select"
+                [(ngModel)]="currentItem[field]"
+                [compareWith]="compareWithBoolean"
+                required>
+                <option [ngValue]="true">Sí</option>
+                <option [ngValue]="false">No</option>
+              </select>
+
               <input
                 *ngIf="entityName === 'Jugadores' && field === 'fechaNacimiento'"
+                [id]="field"
+                [name]="field"
+                type="date"
+                class="form-control"
+                [(ngModel)]="currentItem[field]"
+                required />
+
+              <input
+                *ngIf="entityName === 'Torneos' && (field === 'fechaInicio' || field === 'fechaFin')"
                 [id]="field"
                 [name]="field"
                 type="date"
@@ -238,6 +300,8 @@ import Swal from 'sweetalert2';
                   !(entityName === 'Jugadores' && field === 'foto') &&
                   !(entityName === 'Jugadores' && field === 'fechaNacimiento') &&
                   !(entityName === 'Jugadores' && field === 'huella') &&
+                  !(entityName === 'Torneos' && (field === 'fechaInicio' || field === 'fechaFin')) &&
+                  !(field === 'activo' || field === 'activa') &&
                   (
                     entityName !== 'JugadoresEnEquipo' ||
                     field === 'activo'
@@ -382,6 +446,75 @@ import Swal from 'sweetalert2';
         </div>
       </div>
 
+      <!-- Modal de selección de categorías para JugadorEnEquipo -->
+      <div *ngIf="showCategorySelection && entityName === 'JugadorEnEquipo'" class="card shadow-sm">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Selecciona Categorías</h5>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p class="text-muted">El jugador puede participar en máximo 2 categorías: (Primera + Veteranos) o (Segunda + Veteranos)</p>
+          
+          <div class="alert alert-info">
+            <strong>Categorías seleccionadas:</strong>
+            <div *ngIf="categoriasSeleccionadas.length === 0" class="text-muted mt-2">
+              Ninguna categoría seleccionada
+            </div>
+            <div *ngFor="let cat of categoriasSeleccionadas" class="badge bg-primary me-2 mt-2">
+              {{ cat.categoria?.nombre }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div *ngFor="let categoria of categoriasDisponibles" class="col-md-6 col-lg-4 mb-3">
+              <div class="card" 
+                   [class.border-primary]="estaCategoriaSeleccionada(categoria.id)"
+                   [class.bg-light]="estaCategoriaSeleccionada(categoria.id)"
+                   (click)="seleccionarCategoria(categoria)"
+                   style="cursor: pointer;">
+                <div class="card-body">
+                  <div class="form-check">
+                    <input 
+                      type="checkbox" 
+                      class="form-check-input" 
+                      [checked]="estaCategoriaSeleccionada(categoria.id)"
+                      [id]="obtenerIdCategoria(categoria.id)">
+                    <label class="form-check-label" [for]="obtenerIdCategoria(categoria.id)">
+                      <strong>{{ categoria.categoria?.nombre }}</strong>
+                    </label>
+                  </div>
+                  <small class="text-muted d-block mt-2">
+                    Edad mínima: {{ categoria.categoria?.edadMinima || 'N/A' }}
+                    <span *ngIf="categoria.categoria?.edadMaxima">
+                      - Edad máxima: {{ categoria.categoria?.edadMaxima }}
+                    </span>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button 
+              type="button"
+              class="btn btn-success"
+              (click)="guardarCategoriasSeleccionadas()"
+              [disabled]="categoriasSeleccionadas.length === 0 || submitting">
+              {{ submitting ? 'Guardando...' : 'Confirmar Categorías' }}
+            </button>
+
+            <button 
+              type="button"
+              class="btn btn-secondary"
+              (click)="cancelarCategoriasSeleccionadas()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`
@@ -401,6 +534,12 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   equipos: any[] = [];
   jugadores: any[] = [];
   roles: any[] = [];
+
+  // Para JugadorEnEquipo + Categorías
+  showCategorySelection = false;
+  categoriasDisponibles: any[] = [];
+  categoriasSeleccionadas: any[] = [];
+  jugadorEnEquipoId: number | null = null;
 
   @ViewChild('video')
   video!: ElementRef<HTMLVideoElement>;
@@ -430,6 +569,18 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   submitting = false;
   error = false;
   errorMessage = '';
+
+  // Paginación y búsqueda
+  searchQuery = '';
+  pageSize = 20;
+  currentPage = 1;
+  totalItems = 0;
+  allItems: any[] = [];
+  filteredItems: any[] = [];
+
+  // Debounce para búsqueda
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   private modelConfig: Record<string, string[]> = {
     Arbitros: [
@@ -471,12 +622,30 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     Torneos: [
       'nombre',
       'fechaInicio',
-      'fechaFin'
+      'fechaFin',
+      'activo'
     ],
     JugadoresEnEquipo: [
       'jugador',
       'equipo',
       'torneo',
+      'activo'
+    ],
+    Categorias: [
+      'nombre',
+      'edadMinima',
+      'edadMaxima',
+      'descripcion'
+    ],
+    CategoriaTorneo: [
+      'torneo',
+      'categoria',
+      'orden',
+      'activa'
+    ],
+    JugadorEnCategoria: [
+      'jugador',
+      'categoriaTorneo',
       'activo'
     ]
   };
@@ -490,6 +659,17 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeEntity();
     this.loadData();
+
+    // Suscribir al searchSubject con debounce de 500ms
+    this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(query => {
+        this.performSearch(query);
+      });
   }
 
   private initializeEntity(): void {
@@ -520,9 +700,14 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
 
     this.crudService.findAll(this.endpoint).subscribe({
       next: (data) => {
-        this.items = Array.isArray(data)
+        this.allItems = Array.isArray(data)
           ? data
           : (data ? [data] : []);
+
+        this.totalItems = this.allItems.length;
+        this.currentPage = 1;
+        this.searchQuery = '';
+        this.updatePaginatedItems();
 
         this.loading = false;
       },
@@ -535,6 +720,80 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  private updatePaginatedItems(): void {
+    // Ya no necesitamos filtrar localmente porque el backend hace la búsqueda
+    // Solo paginamos los items ya filtrados
+    this.totalItems = this.allItems.length;
+    const totalPages = Math.ceil(this.totalItems / this.pageSize);
+    
+    if (this.currentPage > totalPages && totalPages > 0) {
+      this.currentPage = totalPages;
+    }
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.items = this.allItems.slice(startIndex, endIndex);
+  }
+
+  onSearch(query: string): void {
+    this.searchQuery = query;
+    this.currentPage = 1;
+    // Emitir al subject para que el debounce lo maneje
+    this.searchSubject.next(query);
+  }
+
+  private performSearch(query: string): void {
+    if (query.trim() === '') {
+      // Si la búsqueda está vacía, cargar todos los items
+      this.loadData();
+    } else {
+      // Buscar en el backend
+      this.loading = true;
+      this.crudService.search(this.endpoint, query).subscribe({
+        next: (data) => {
+          this.allItems = Array.isArray(data) ? data : (data ? [data] : []);
+          this.totalItems = this.allItems.length;
+          this.currentPage = 1;
+          this.updatePaginatedItems();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error buscando:', error);
+          this.error = true;
+          this.errorMessage = 'Error al buscar. Intente de nuevo.';
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  nextPage(): void {
+    const totalPages = Math.ceil(this.totalItems / this.pageSize);
+    if (this.currentPage < totalPages) {
+      this.currentPage++;
+      this.updatePaginatedItems();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedItems();
+    }
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalItems / this.pageSize);
+  }
+
+  compareWithBoolean(a: any, b: any): boolean {
+    return a === b;
+  }
+
+  getMinValue(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
   getNestedProperty(obj: any, path: string): any {
@@ -570,9 +829,34 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     return `data:image/jpeg;base64,${valor}`;
   }
 
+  private normalizeBooleanFields(item: any): any {
+    if (!item) return item;
+    
+    const normalized = { ...item };
+    
+    // Normalizar campo 'activo'
+    if (normalized.hasOwnProperty('activo')) {
+      normalized.activo = this.toBoolean(normalized.activo);
+    }
+    
+    // Normalizar campo 'activa'
+    if (normalized.hasOwnProperty('activa')) {
+      normalized.activa = this.toBoolean(normalized.activa);
+    }
+    
+    return normalized;
+  }
+
+  private toBoolean(value: any): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    if (typeof value === 'number') return value !== 0;
+    return Boolean(value);
+  }
+
   onCreateClick(): void {
     this.editingId = null;
-    this.currentItem = {};
+    this.currentItem = this.normalizeBooleanFields({});
     this.fotoPreview = null;
     this.huellaStatus = 'Sin capturar';
     this.escuchandoHuella = false;
@@ -596,10 +880,10 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   onEditClick(item: any): void {
     this.editingId = item.id;
 
-    this.currentItem = {
+    this.currentItem = this.normalizeBooleanFields({
       ...item,
       fechaNacimiento: this.toInputDate(item.fechaNacimiento)
-    };
+    });
 
    this.fotoPreview = this.currentItem.foto
     ? this.buildImageSrc(this.currentItem.foto)
@@ -817,6 +1101,17 @@ private detenerConsultaHuella(): void {
       payload.fechaNacimiento = `${dia}/${mes}/${anio}`;
     }
 
+    if (this.entityName === 'Torneos') {
+      if (payload.fechaInicio) {
+        const [anio, mes, dia] = payload.fechaInicio.split('-');
+        payload.fechaInicio = `${dia}/${mes}/${anio}`;
+      }
+      if (payload.fechaFin) {
+        const [anio, mes, dia] = payload.fechaFin.split('-');
+        payload.fechaFin = `${dia}/${mes}/${anio}`;
+      }
+    }
+
     this.submitting = true;
 
     const observable = this.editingId
@@ -824,19 +1119,24 @@ private detenerConsultaHuella(): void {
       : this.crudService.create(this.endpoint, payload);
 
     observable.subscribe({
-      next: () => {
-        Swal.fire('OK', 'Guardado correctamente', 'success');
-
-        this.showForm = false;
-        this.editingId = null;
-        this.currentItem = {};
-        this.submitting = false;
-        this.fotoPreview = null;
-        this.huellaStatus = 'Sin capturar';
-        this.escuchandoHuella = false;
-
-        this.cerrarCamara();
-        this.loadData();
+      next: (response) => {
+        // Si es JugadorEnEquipo y es creación (no edición), mostrar selección de categorías
+        if (this.entityName === 'JugadorEnEquipo' && !this.editingId) {
+          this.jugadorEnEquipoId = response?.id;
+          this.categoriasSeleccionadas = [];
+          this.showCategorySelection = true;
+          this.showForm = false;
+          this.submitting = false;
+          
+          // Cargar categorías disponibles
+          this.cargarCategoriasDisponibles(this.currentItem.torneo);
+          
+          Swal.fire('OK', 'Jugador asignado al equipo. Ahora selecciona las categorías.', 'success');
+        } else {
+          // Para otros tipos, cerrar formulario normalmente
+          Swal.fire('OK', 'Guardado correctamente', 'success');
+          this.mostrarFormularioPrincipal();
+        }
       },
       error: (err) => {
         console.error(err);
@@ -849,6 +1149,133 @@ private detenerConsultaHuella(): void {
         );
       }
     });
+  }
+
+  private mostrarFormularioPrincipal(): void {
+    this.showForm = false;
+    this.showCategorySelection = false;
+    this.editingId = null;
+    this.currentItem = {};
+    this.submitting = false;
+    this.fotoPreview = null;
+    this.huellaStatus = 'Sin capturar';
+    this.escuchandoHuella = false;
+    this.categoriasSeleccionadas = [];
+    this.jugadorEnEquipoId = null;
+
+    this.cerrarCamara();
+    this.loadData();
+  }
+
+  private cargarCategoriasDisponibles(torneoId: number): void {
+    this.crudService.findAll(`torneos/${torneoId}/categoria-torneo`).subscribe({
+      next: (data) => {
+        this.categoriasDisponibles = Array.isArray(data) ? data : [];
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+        this.categoriasDisponibles = [];
+      }
+    });
+  }
+
+  seleccionarCategoria(categoria: any): void {
+    const index = this.categoriasSeleccionadas.findIndex(c => c.id === categoria.id);
+    
+    if (index > -1) {
+      // Deseleccionar
+      this.categoriasSeleccionadas.splice(index, 1);
+    } else {
+      // Seleccionar con validación
+      if (this.esSeleccionValida(categoria)) {
+        this.categoriasSeleccionadas.push(categoria);
+      } else {
+        Swal.fire('No permitido', 'No puedes seleccionar Primera y Segunda en el mismo torneo. Solo: (Primera + Veteranos) o (Segunda + Veteranos)', 'warning');
+      }
+    }
+  }
+
+  private esSeleccionValida(nuevaCategoria: any): boolean {
+    const nombreNueva = nuevaCategoria.categoria?.nombre.toLowerCase() || '';
+    
+    // Si ya tiene 2 categorías, no permitir más
+    if (this.categoriasSeleccionadas.length >= 2) {
+      return false;
+    }
+
+    // Si ya tiene categorías, validar combinación
+    for (let cat of this.categoriasSeleccionadas) {
+      const nombreExistente = cat.categoria?.nombre.toLowerCase() || '';
+      
+      // Prohibir Primera + Segunda
+      if ((nombreNueva.includes('primera') && nombreExistente.includes('segunda')) ||
+          (nombreNueva.includes('segunda') && nombreExistente.includes('primera'))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  guardarCategoriasSeleccionadas(): void {
+    if (this.categoriasSeleccionadas.length === 0) {
+      Swal.fire('Advertencia', 'Debes seleccionar al menos una categoría', 'warning');
+      return;
+    }
+
+    this.submitting = true;
+
+    // Crear cada inscripción en categoría
+    const inscripciones = this.categoriasSeleccionadas.map(cat => 
+      this.crudService.create('jugador-categoria', {
+        jugadorId: this.currentItem.jugador,
+        categoriaTorneoId: cat.id,
+        activo: true
+      })
+    );
+
+    // Ejecutar todas las inscripciones en paralelo
+    Promise.all(inscripciones.map(ins => ins.toPromise())).then(() => {
+      Swal.fire('OK', 'Jugador inscrito en categorías correctamente', 'success');
+      this.mostrarFormularioPrincipal();
+    }).catch((err) => {
+      console.error('Error inscribiendo en categorías:', err);
+      Swal.fire('Error', 'No se pudo inscribir en todas las categorías', 'error');
+      this.submitting = false;
+    });
+  }
+
+  cancelarCategoriasSeleccionadas(): void {
+    Swal.fire({
+      title: '¿Cancelar?',
+      text: 'Se eliminará la asignación del jugador al equipo',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed && this.jugadorEnEquipoId) {
+        this.crudService.remove('jugador-en-equipo', this.jugadorEnEquipoId).subscribe({
+          next: () => {
+            this.mostrarFormularioPrincipal();
+          },
+          error: (err) => {
+            console.error('Error eliminando:', err);
+          }
+        });
+      }
+    });
+  }
+
+  // Métodos helper para el template de selección de categorías
+  estaCategoriaSeleccionada(categoriaId: number): boolean {
+    return this.categoriasSeleccionadas.some(c => c.id === categoriaId);
+  }
+
+  obtenerIdCategoria(categoriaId: number): string {
+    return 'cat_' + categoriaId;
   }
 
   onDeleteClick(id: number): void {
@@ -910,6 +1337,8 @@ private detenerConsultaHuella(): void {
   ngOnDestroy(): void {
     this.cerrarCamara();
     this.detenerConsultaHuella();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadEquipos(): void {
@@ -977,6 +1406,6 @@ private detenerConsultaHuella(): void {
       return `${year}-${month}-${day}`;
     }
 
-    return date.slice(0, 10);
+    return date.slice(0, 5);
   }
 }

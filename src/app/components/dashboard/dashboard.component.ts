@@ -43,6 +43,16 @@ export class DashboardComponent {
       image: 'assets/img/jugadoresenequipo.jpg'
     },
     {
+      label: 'Categorías',
+      path: '/categorias',
+      image: 'assets/img/categorias.jpg'
+    },
+    {
+      label: 'Categorías por Torneo',
+      path: '/categoria-torneo',
+      image: 'assets/img/categoriasentorneo.jpeg'
+    },
+    {
       label: 'Árbitros',
       path: '/arbitros',
       image: 'assets/img/arbitro.jpg'
