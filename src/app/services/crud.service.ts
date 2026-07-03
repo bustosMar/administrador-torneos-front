@@ -29,4 +29,14 @@ export class CrudService {
   remove(entity: string, id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${entity}/${id}`);
   }
+
+  escucharLectorHuella() {
+     return this.http.post<any>(`${this.apiUrl}/huellas/lector/escuchar`,{});
+  }
+  
+  obtenerHuella() {
+    return this.http.get<any>(`${this.apiUrl}/huellas/obtener`);
+  }
+
+  
 }
