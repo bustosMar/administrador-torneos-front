@@ -33,16 +33,6 @@ export class DashboardComponent {
       image: 'assets/img/equiposParticipantes.jpg'
     },
     {
-      label: 'Jugadores',
-      path: '/jugadores',
-      image: 'assets/img/jugador.jpg'
-    },
-     {
-      label: 'Jugadores en Equipo',
-      path: '/jugadores-en-equipo',
-      image: 'assets/img/jugadoresenequipo.jpg'
-    },
-    {
       label: 'Categorías',
       path: '/categorias',
       image: 'assets/img/categorias.jpg'
@@ -51,6 +41,16 @@ export class DashboardComponent {
       label: 'Categorías por Torneo',
       path: '/categoria-torneo',
       image: 'assets/img/categoriasentorneo.jpeg'
+    },
+    {
+      label: 'Jugadores',
+      path: '/jugadores',
+      image: 'assets/img/jugador.jpg'
+    },
+     {
+      label: 'Jugadores en Equipo',
+      path: '/jugadores-en-equipo',
+      image: 'assets/img/jugadoresenequipo.jpg'
     },
     {
       label: 'Árbitros',

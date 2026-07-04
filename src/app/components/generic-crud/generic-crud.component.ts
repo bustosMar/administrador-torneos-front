@@ -66,7 +66,8 @@ import Swal from 'sweetalert2';
                     <ng-container
                       *ngIf="
                         entityName === 'EquiposEnTorneo' ||
-                        entityName === 'JugadoresEnEquipo';
+                        entityName === 'JugadoresEnEquipo' ||
+                        entityName === 'CategoriaTorneo';
                         else normal
                       ">
 
@@ -264,6 +265,34 @@ import Swal from 'sweetalert2';
               </select>
 
               <select
+                *ngIf="entityName === 'CategoriaTorneo' && field === 'torneo'"
+                [id]="field"
+                [name]="field"
+                class="form-select"
+                [(ngModel)]="currentItem.torneo"
+                [disabled]="editingId !== null"
+                required>
+                <option [ngValue]="null">Seleccione un torneo</option>
+                <option *ngFor="let torneo of torneos" [ngValue]="torneo.id">
+                  {{ torneo.nombre }}
+                </option>
+              </select>
+
+              <select
+                *ngIf="entityName === 'CategoriaTorneo' && field === 'categoria'"
+                [id]="field"
+                [name]="field"
+                class="form-select"
+                [(ngModel)]="currentItem.categoria"
+                [disabled]="editingId !== null"
+                required>
+                <option [ngValue]="null">Seleccione una categoría</option>
+                <option *ngFor="let categoria of categorias" [ngValue]="categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+
+              <select
                 *ngIf="field === 'activo' || field === 'activa'"
                 [id]="field"
                 [name]="field"
@@ -301,6 +330,7 @@ import Swal from 'sweetalert2';
                   !(entityName === 'Jugadores' && field === 'fechaNacimiento') &&
                   !(entityName === 'Jugadores' && field === 'huella') &&
                   !(entityName === 'Torneos' && (field === 'fechaInicio' || field === 'fechaFin')) &&
+                  !(entityName === 'CategoriaTorneo' && (field === 'torneo' || field === 'categoria')) &&
                   !(field === 'activo' || field === 'activa') &&
                   (
                     entityName !== 'JugadoresEnEquipo' ||
@@ -534,6 +564,7 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   equipos: any[] = [];
   jugadores: any[] = [];
   roles: any[] = [];
+  categorias: any[] = [];
 
   // Para JugadorEnEquipo + Categorías
   showCategorySelection = false;
@@ -634,13 +665,11 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     Categorias: [
       'nombre',
       'edadMinima',
-      'edadMaxima',
-      'descripcion'
+      'edadMaxima'
     ],
     CategoriaTorneo: [
       'torneo',
       'categoria',
-      'orden',
       'activa'
     ],
     JugadorEnCategoria: [
@@ -867,23 +896,37 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     if (
       this.entityName === 'EquiposEnTorneo' ||
       this.entityName === 'JugadoresEnEquipo' ||
-      this.entityName === 'Usuarios'
+      this.entityName === 'Usuarios' ||
+      this.entityName === 'CategoriaTorneo'
     ) {
       this.loadTorneos();
       this.loadGrupos();
       this.loadEquipos();
       this.loadJugadores();
       this.loadRoles();
+      this.loadCategorias();
     }
   }
 
   onEditClick(item: any): void {
     this.editingId = item.id;
 
-    this.currentItem = this.normalizeBooleanFields({
-      ...item,
-      fechaNacimiento: this.toInputDate(item.fechaNacimiento)
-    });
+    const itemToEdit = { ...item };
+
+    // Convertir fechaNacimiento si existe (Jugadores)
+    if (itemToEdit.fechaNacimiento) {
+      itemToEdit.fechaNacimiento = this.toInputDate(itemToEdit.fechaNacimiento);
+    }
+
+    // Convertir fechaInicio y fechaFin si existen (Torneos)
+    if (itemToEdit.fechaInicio) {
+      itemToEdit.fechaInicio = this.toInputDate(itemToEdit.fechaInicio);
+    }
+    if (itemToEdit.fechaFin) {
+      itemToEdit.fechaFin = this.toInputDate(itemToEdit.fechaFin);
+    }
+
+    this.currentItem = this.normalizeBooleanFields(itemToEdit);
 
    this.fotoPreview = this.currentItem.foto
     ? this.buildImageSrc(this.currentItem.foto)
@@ -900,13 +943,15 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     if (
       this.entityName === 'EquiposEnTorneo' ||
       this.entityName === 'JugadoresEnEquipo' ||
-      this.entityName === 'Usuarios'
+      this.entityName === 'Usuarios' ||
+      this.entityName === 'CategoriaTorneo'
     ) {
       this.loadTorneos();
       this.loadGrupos();
       this.loadEquipos();
       this.loadJugadores();
       this.loadRoles();
+      this.loadCategorias();
     }
 
     this.showForm = true;
@@ -1392,6 +1437,17 @@ private detenerConsultaHuella(): void {
       },
       error: err => {
         console.error('Error cargando torneos', err);
+      }
+    });
+  }
+
+  private loadCategorias(): void {
+    this.crudService.findAll('categorias').subscribe({
+      next: data => {
+        this.categorias = Array.isArray(data) ? data : [];
+      },
+      error: err => {
+        console.error('Error cargando categorias', err);
       }
     });
   }
