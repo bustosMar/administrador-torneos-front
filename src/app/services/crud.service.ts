@@ -18,6 +18,15 @@ export class CrudService {
     return this.http.get<any[]>(`${this.apiUrl}/${entity}/search?q=${encodeURIComponent(query)}`);
   }
 
+  getWithParams(endpoint: string, params: Record<string, any>): Observable<any> {
+    let url = `${this.apiUrl}/${endpoint}?`;
+    Object.keys(params).forEach((key, index) => {
+      if (index > 0) url += '&';
+      url += `${key}=${params[key]}`;
+    });
+    return this.http.get<any>(url);
+  }
+
   findById(entity: string, id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${entity}/${id}`);
   }

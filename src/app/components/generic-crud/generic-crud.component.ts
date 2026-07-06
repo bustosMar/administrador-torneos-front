@@ -65,9 +65,13 @@ import Swal from 'sweetalert2';
 
                     <ng-container
                       *ngIf="
-                        entityName === 'EquiposEnTorneo' ||
-                        entityName === 'JugadoresEnEquipo' ||
-                        entityName === 'CategoriaTorneo';
+                        (
+                          entityName === 'EquiposEnTorneo' ||
+                          entityName === 'JugadoresEnEquipo' ||
+                          entityName === 'CategoriaTorneo' ||
+                          entityName === 'Torneos'
+                        ) &&
+                        !(col === 'activo' || col === 'activa');
                         else normal
                       ">
 
@@ -200,6 +204,7 @@ import Swal from 'sweetalert2';
                 class="form-select"
                 [(ngModel)]="currentItem.equipo"
                 [disabled]="editingId !== null && entityName !== 'JugadoresEnEquipo'"
+                (change)="onEquipoChangeJugador(currentItem.equipo, currentItem.torneo)"
                 required>
                 <option [ngValue]="null">Seleccione un equipo</option>
                 <option *ngFor="let equipo of equipos" [ngValue]="equipo.id">
@@ -243,6 +248,7 @@ import Swal from 'sweetalert2';
                 [name]="field"
                 class="form-select"
                 [(ngModel)]="currentItem.torneo"
+                (change)="onTorneoChangeEquipo(currentItem.torneo)"
                 [disabled]="editingId !== null"
                 required>
                 <option [ngValue]="null">Seleccione un torneo</option>
@@ -293,6 +299,19 @@ import Swal from 'sweetalert2';
               </select>
 
               <select
+                *ngIf="entityName === 'JugadoresEnEquipo' && field === 'categoriaTorneo'"
+                [id]="field"
+                [name]="field"
+                class="form-select"
+                [(ngModel)]="currentItem.categoriaTorneo"
+                [disabled]="categoriasTorneo.length === 0">
+                <option [ngValue]="null">Seleccione una categoría</option>
+                <option *ngFor="let cat of categoriasTorneo" [ngValue]="cat.id">
+                  {{ cat.categoriaNombre || cat.nombre }}
+                </option>
+              </select>
+
+              <select
                 *ngIf="field === 'activo' || field === 'activa'"
                 [id]="field"
                 [name]="field"
@@ -302,6 +321,49 @@ import Swal from 'sweetalert2';
                 required>
                 <option [ngValue]="true">Sí</option>
                 <option [ngValue]="false">No</option>
+              </select>
+
+              <select
+                *ngIf="entityName === 'Torneos' && field === 'estado'"
+                [id]="'estado'"
+                [name]="'estado'"
+                class="form-select"
+                [(ngModel)]="currentItem.estado"
+                (change)="onEstadoChange(currentItem.estado)"
+                required>
+                <option [ngValue]="null">Seleccione un estado</option>
+                <option *ngFor="let estado of estados" [ngValue]="estado.id">
+                  {{ estado.nombre }}
+                </option>
+              </select>
+
+              <select
+                *ngIf="entityName === 'Torneos' && field === 'municipio'"
+                [id]="'municipio'"
+                [name]="'municipio'"
+                class="form-select"
+                [(ngModel)]="currentItem.municipio"
+                (change)="onMunicipioChange(currentItem.municipio)"
+                [disabled]="!currentItem.estado || municipios.length === 0"
+                required>
+                <option [ngValue]="null">Seleccione un municipio</option>
+                <option *ngFor="let municipio of municipios" [ngValue]="municipio.id">
+                  {{ municipio.nombre }}
+                </option>
+              </select>
+
+              <select
+                *ngIf="entityName === 'EquiposEnTorneo' && field === 'categoriaTorneo'"
+                [id]="'categoriaTorneo'"
+                [name]="'categoriaTorneo'"
+                class="form-select"
+                [(ngModel)]="currentItem.categoriaTorneo"
+                [disabled]="!currentItem.torneo"
+                required>
+                <option [ngValue]="null">Seleccione una categoría</option>
+                <option *ngFor="let cat of categoriasTorneo" [ngValue]="cat.id">
+                  {{ cat.categoriaNombre }}
+                </option>
               </select>
 
               <input
@@ -330,6 +392,8 @@ import Swal from 'sweetalert2';
                   !(entityName === 'Jugadores' && field === 'fechaNacimiento') &&
                   !(entityName === 'Jugadores' && field === 'huella') &&
                   !(entityName === 'Torneos' && (field === 'fechaInicio' || field === 'fechaFin')) &&
+                  !(entityName === 'Torneos' && (field === 'estado' || field === 'municipio')) &&
+                  !(entityName === 'EquiposEnTorneo' && field === 'categoriaTorneo') &&
                   !(entityName === 'CategoriaTorneo' && (field === 'torneo' || field === 'categoria')) &&
                   !(field === 'activo' || field === 'activa') &&
                   (
@@ -342,7 +406,7 @@ import Swal from 'sweetalert2';
                 type="text"
                 class="form-control"
                 [(ngModel)]="currentItem[field]"
-                [required]="!excludedFields.includes(field)" />
+                [required]="!excludedFields.includes(field) && !(optionalFields[entityName]?.includes(field))" />
 
               <!-- HUELLA DIGITAL -->
               <div
@@ -565,6 +629,9 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   jugadores: any[] = [];
   roles: any[] = [];
   categorias: any[] = [];
+  estados: any[] = [];
+  municipios: any[] = [];
+  categoriasTorneo: any[] = [];
 
   // Para JugadorEnEquipo + Categorías
   showCategorySelection = false;
@@ -593,6 +660,11 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
   formFields: string[] = [];
 
   excludedFields = ['id'];
+
+  optionalFields: { [key: string]: string[] } = {
+    'Categorias': ['edadMinima', 'edadMaxima'],
+    'EquiposEnTorneo': ['grupo']
+  };
 
   showForm = false;
   editingId: number | null = null;
@@ -624,6 +696,7 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
     EquiposEnTorneo: [
       'equipo',
       'torneo',
+      'categoriaTorneo',
       'grupo'
     ],
     Usuarios: [
@@ -654,12 +727,15 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
       'nombre',
       'fechaInicio',
       'fechaFin',
-      'activo'
+      'activo',
+      'estado',
+      'municipio'
     ],
     JugadoresEnEquipo: [
       'jugador',
-      'equipo',
       'torneo',
+      'equipo',
+      'categoriaTorneo',
       'activo'
     ],
     Categorias: [
@@ -906,6 +982,10 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
       this.loadRoles();
       this.loadCategorias();
     }
+
+    if (this.entityName === 'Torneos') {
+      this.loadEstados();
+    }
   }
 
   onEditClick(item: any): void {
@@ -952,6 +1032,17 @@ export class GenericCrudComponent implements OnInit, OnDestroy {
       this.loadJugadores();
       this.loadRoles();
       this.loadCategorias();
+    }
+
+    if (this.entityName === 'Torneos') {
+      this.loadEstados();
+      if (this.currentItem.estado) {
+        this.loadMunicipiosByEstado(this.currentItem.estado);
+      }
+    }
+
+    if (this.entityName === 'EquiposEnTorneo' && this.currentItem.torneo) {
+      this.loadCategoriasByTorneo(this.currentItem.torneo);
     }
 
     this.showForm = true;
@@ -1450,6 +1541,122 @@ private detenerConsultaHuella(): void {
         console.error('Error cargando categorias', err);
       }
     });
+  }
+
+  private loadEstados(): void {
+    this.crudService.findAll('estados').subscribe({
+      next: data => {
+        this.estados = Array.isArray(data) ? data : [];
+      },
+      error: err => {
+        console.error('Error cargando estados', err);
+      }
+    });
+  }
+
+  private loadCategoriasByTorneo(torneoId: any): void {
+    this.crudService.findAll(`categoria-torneo?torneoId=${torneoId}`).subscribe({
+      next: data => {
+        this.categoriasTorneo = Array.isArray(data) ? data : [];
+      },
+      error: err => {
+        console.error('Error cargando categorías del torneo', err);
+      }
+    });
+  }
+
+  private loadMunicipiosByEstado(estadoId: any): void {
+    this.crudService.findAll(`municipios/estado/${estadoId}`).subscribe({
+      next: data => {
+        this.municipios = Array.isArray(data) ? data : [];
+      },
+      error: err => {
+        console.error('Error cargando municipios', err);
+      }
+    });
+  }
+
+  onEstadoChange(estadoId: any): void {
+    if (estadoId) {
+      this.loadMunicipiosByEstado(estadoId);
+      this.currentItem.municipio = null;
+      this.currentItem.municipioEstado = null;
+    }
+  }
+
+  onMunicipioChange(municipioId: any): void {
+    if (municipioId && this.currentItem.estado) {
+      // Obtener el ID de MunicipioEstado
+      this.crudService.getWithParams('municipio-estado/find', { municipioId, estadoId: this.currentItem.estado }).subscribe({
+        next: (idMunicipioEstado: any) => {
+          this.currentItem.municipioEstado = idMunicipioEstado;
+        },
+        error: err => {
+          console.error('Error obteniendo municipio-estado', err);
+        }
+      });
+    }
+  }
+
+  onTorneoChangeEquipo(torneoId: any): void {
+    if (!torneoId) return;
+    
+    if (this.entityName === 'EquiposEnTorneo') {
+      this.loadCategoriasByTorneo(torneoId);
+      this.currentItem.categoriaTorneo = null;
+    } else if (this.entityName === 'JugadoresEnEquipo') {
+      // Solo resetear categoría, NO equipo
+      this.currentItem.categoriaTorneo = null;
+    }
+  }
+
+  onEquipoChangeJugador(equipoId: any, torneoId: any): void {
+    console.log('onEquipoChangeJugador called con equipoId:', equipoId, 'torneoId:', torneoId, 'entityName:', this.entityName);
+    
+    if (equipoId && torneoId && this.entityName === 'JugadoresEnEquipo') {
+      // Buscar los equipos-en-torneo que coincidan con este equipo y torneo
+      this.crudService.findAll('equipos-en-torneo').subscribe({
+        next: (data: any[]) => {
+          console.log('Datos equipos-en-torneo recibidos:', data);
+          
+          if (Array.isArray(data)) {
+            // Convertir IDs a números para comparación correcta
+            const equipoIdNum = Number(equipoId);
+            const torneoIdNum = Number(torneoId);
+            
+            // Filtrar los equipos en torneo para este equipo y torneo específico
+            const equiposDelEquipo = data.filter(e => {
+              const eEquipoNum = Number(e.equipo);
+              const eTorneoNum = Number(e.torneo);
+              const matches = eEquipoNum === equipoIdNum && eTorneoNum === torneoIdNum;
+              console.log(`Comparando: equipo ${eEquipoNum} === ${equipoIdNum}? ${eEquipoNum === equipoIdNum}, torneo ${eTorneoNum} === ${torneoIdNum}? ${eTorneoNum === torneoIdNum}, matches: ${matches}`);
+              return matches;
+            });
+            
+            console.log('Equipos filtrados:', equiposDelEquipo);
+            
+            // Extraer las categorías únicas
+            const categoriasDelEquipo = equiposDelEquipo.map(e => ({
+              id: e.categoriaTorneo,
+              categoriaNombre: e.categoriaTorneoNombre
+            }));
+            
+            console.log('Categorías extraídas:', categoriasDelEquipo);
+            
+            // Asignar a categoriasTorneo para que el select las muestre
+            this.categoriasTorneo = categoriasDelEquipo;
+            this.currentItem.categoriaTorneo = null; // Limpiar la selección anterior
+            
+            console.log('categoriasTorneo asignado:', this.categoriasTorneo);
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando categorías del equipo', err);
+        }
+      });
+    } else {
+      console.log('Condiciones no cumplidas - equipoId:', equipoId, 'torneoId:', torneoId, 'entityName:', this.entityName);
+    }
   }
 
   private toInputDate(date: string): string {

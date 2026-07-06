@@ -28,11 +28,6 @@ export class DashboardComponent {
       image: 'assets/img/equipo.jpg'
     },
     {
-      label: 'Equipos en Torneo',
-      path: '/equipos-en-torneo',
-      image: 'assets/img/equiposParticipantes.jpg'
-    },
-    {
       label: 'Categorías',
       path: '/categorias',
       image: 'assets/img/categorias.jpg'
@@ -41,6 +36,11 @@ export class DashboardComponent {
       label: 'Categorías por Torneo',
       path: '/categoria-torneo',
       image: 'assets/img/categoriasentorneo.jpeg'
+    },
+    {
+      label: 'Equipos en Torneo',
+      path: '/equipos-en-torneo',
+      image: 'assets/img/equiposParticipantes.jpg'
     },
     {
       label: 'Jugadores',
