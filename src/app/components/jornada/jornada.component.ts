@@ -15,12 +15,15 @@ import Swal from 'sweetalert2';
 export class JornadaComponent implements OnInit {
 
   torneoId: number | null = null;
+  categoriaId: number | null = null;
   grupoId: number | null = null;
+  jornadaVisualizada: any = null;
 
   torneos: any[] = [];
   grupos: any[] = [];
   jornadas: any[] = [];
-  partidos: any[] = [];
+  partidos: any[] = []; 
+  categoriasDisponibles: any[] = [];
 
   constructor(
     private crudService: CrudService,
@@ -51,55 +54,72 @@ export class JornadaComponent implements OnInit {
 
 
 
-  generarJornada(): void {
+generarJornada(): void {
 
-    if (!this.torneoId) {
+  if (!this.torneoId) {
 
-      Swal.fire(
-        'Atención',
-        'Seleccione un torneo',
-        'warning'
-      );
+    Swal.fire(
+      'Atención',
+      'Seleccione un torneo',
+      'warning'
+    );
 
-      return;
-    }
-
-   
-
-    this.jornadaService
-      .generarJornada('jornadas', this.torneoId)
-      .subscribe({
-        next: (data: any) => {
-
-          const fechaDomingo = this.getNextSunday();
-
-          this.jornadas = (
-            Array.isArray(data)
-              ? data
-              : (data?._embedded?.grupos ?? [])
-          ).map((j: any) => ({
-            ...j,
-            fecha: fechaDomingo,
-            hora: j.hora ?? '08:00'
-          }));
-
-           if (this.jornadas.length === 0) {
-
-            Swal.fire(
-              'Atención',
-              'No existen jornadas para guardar',
-              'warning'
-            );
-      
-            return;
-          }
-
-        },
-        error: () => {
-          this.jornadas = [];
-        }
-      });
+    return;
   }
+
+  if (!this.categoriaId) {
+
+    Swal.fire(
+      'Atención',
+      'Seleccione una categoría',
+      'warning'
+    );
+
+    return;
+  }
+
+  this.jornadaService
+    .visualizarJornada(
+      'jornadas',
+      this.torneoId,
+      this.categoriaId
+    )
+    .subscribe({
+
+      next: (data: any) => {
+
+        this.jornadaVisualizada = data;
+
+        this.jornadas = data ? [data] : [];
+
+        this.partidos = data?.partidos ?? [];
+
+        if (this.jornadas.length === 0) {
+
+          Swal.fire(
+            'Atención',
+            'No existen jornadas para guardar',
+            'warning'
+          );
+
+          return;
+        }
+
+      },
+
+      error: (err) => {
+
+        console.error(err);
+
+        this.jornadaVisualizada = null;
+        this.jornadas = [];
+        this.partidos = [];
+
+      }
+
+    });
+
+}
 
   guardarJornada(): void {
 
@@ -223,5 +243,57 @@ export class JornadaComponent implements OnInit {
       });
     
     }
+
+    onTorneoChange(torneoId: number | null) {
+      if (torneoId !== null) {
+        this.loadCategoriasByTorneo(torneoId);
+      }
+    }
+
+       private loadCategoriasByTorneo(torneoId: any): void {
+        this.crudService.findAll(`categoria-torneo?torneoId=${torneoId}`).subscribe({
+          next: data => {
+            this.categoriasDisponibles = Array.isArray(data) ? data : [];
+          },
+          error: err => {
+            console.error('Error cargando categorías del torneo', err);
+          }
+        });
+      }
+
+      visualizarJornada(): void {
+
+        if (!this.torneoId) {
+          Swal.fire('Atención', 'Seleccione un torneo', 'warning');
+          return;
+        }
+      
+        if (!this.categoriaId) {
+          Swal.fire('Atención', 'Seleccione una categoría', 'warning');
+          return;
+        }
+      
+        this.jornadaService
+          .visualizarJornada(
+            'jornadas',
+            this.torneoId,
+            this.categoriaId
+          )
+          .subscribe({
+            next: (data: any) => {
+              this.jornadaVisualizada = data;
+            },
+            error: (err) => {
+              console.error(err);
+              this.jornadaVisualizada = null;
+      
+              Swal.fire(
+                'Error',
+                'No fue posible visualizar la jornada',
+                'error'
+              );
+            }
+          });
+      }
 
 }

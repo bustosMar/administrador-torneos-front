@@ -1635,13 +1635,22 @@ private detenerConsultaHuella(): void {
             
             console.log('Equipos filtrados:', equiposDelEquipo);
             
-            // Extraer las categorías únicas
-            const categoriasDelEquipo = equiposDelEquipo.map(e => ({
-              id: e.categoriaTorneo,
-              categoriaNombre: e.categoriaTorneoNombre
-            }));
+            // Extraer las categorías únicas usando un Map para evitar duplicados
+            const categoriasMap = new Map();
+            equiposDelEquipo.forEach(e => {
+              const categoriaTorneoId = e.categoriaTorneo;
+              if (!categoriasMap.has(categoriaTorneoId)) {
+                categoriasMap.set(categoriaTorneoId, {
+                  id: categoriaTorneoId,
+                  categoriaNombre: e.categoriaTorneoNombre
+                });
+              }
+            });
+            
+            const categoriasDelEquipo = Array.from(categoriasMap.values());
             
             console.log('Categorías extraídas:', categoriasDelEquipo);
+            console.log('Valores de ID en categorías:', categoriasDelEquipo.map(c => ({ id: c.id, nombre: c.categoriaNombre })));
             
             // Asignar a categoriasTorneo para que el select las muestre
             this.categoriasTorneo = categoriasDelEquipo;
