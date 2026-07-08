@@ -121,50 +121,59 @@ generarJornada(): void {
 
 }
 
-  guardarJornada(): void {
+ guardarPartidos(): void {
 
-    if (!this.torneoId) {
-
-      Swal.fire(
-        'Atención',
-        'Seleccione un torneo',
-        'warning'
-      );
-
-      return;
-    }
-
-
-      this.jornadaService
-      .generarPartidos('jornadas',this.torneoId)
-      .subscribe({
-        next: () => {
-
-          Swal.fire(
-            'OK',
-            'Guardado correctamente',
-            'success'
-          );
-
-          this.limpiarFormulario();
-        },
-        error: (err) => {
-          console.error(err);
-
-          Swal.fire(
-            'Error',
-            'No fue posible guardar la jornada',
-            'error'
-          );
-        }
-      });
+  if (!this.jornadaVisualizada) {
+    Swal.fire('Atención', 'Primero visualice la jornada', 'warning');
+    return;
   }
+
+  const partidosParaGuardar = this.jornadaVisualizada.partidos.map((partido: any) => ({
+    grupo: partido.idGrupo ?? this.jornadaVisualizada.idGrupo,
+    grupoNombre: partido.grupo ?? this.jornadaVisualizada.grupo,
+
+    jornada: partido.idJornada ?? this.jornadaVisualizada.idJornada,
+    numeroJornada: partido.numeroJornada ?? this.jornadaVisualizada.numeroJornada,
+
+    equipoLocal: partido.idEquipoLocal,
+    equipoLocalNombre: partido.equipoLocal,
+
+    equipoVisitante: partido.idEquipoVisitante,
+    equipoVisitanteNombre: partido.equipoVisitante,
+
+    hora: partido.hora,
+    fecha: partido.fecha ?? this.jornadaVisualizada.fechaProgramada,
+
+    arbitro: partido.idArbitro ?? null,
+    arbitroNombre: partido.arbitro ?? null,
+
+    jugado: true
+  }));
+
+  console.log(
+  JSON.stringify(partidosParaGuardar, null, 2)
+);
+
+  this.jornadaService
+    .guardarPartidos('partidos/jornada', partidosParaGuardar)
+    .subscribe({
+      next: () => {
+        Swal.fire('OK', 'Partidos guardados correctamente', 'success');
+        this.limpiarFormulario();
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire('Error', 'No fue posible guardar los partidos', 'error');
+      }
+    });
+}
 
   private limpiarFormulario(): void {
 
     this.torneoId = null;
     this.grupoId = null;
 
+    this.categoriaId = null;
     this.jornadas = [];
   }
 
@@ -295,5 +304,62 @@ generarJornada(): void {
             }
           });
       }
+
+  generarJornadas(): void {
+
+  if (this.torneoId == null) {
+    Swal.fire(
+      'Atención',
+      'Seleccione un torneo',
+      'warning'
+    );
+    return;
+  }
+
+  if (this.categoriaId == null) {
+    Swal.fire(
+      'Atención',
+      'Seleccione una categoría',
+      'warning'
+    );
+    return;
+  }
+
+  this.jornadaService
+    .generarJornadas(
+      'jornadas',
+      this.torneoId,
+      this.categoriaId
+    )
+    .subscribe({
+      next: (data: any) => {
+
+        this.jornadas = Array.isArray(data)
+          ? data
+          : [data];
+
+        this.jornadaVisualizada = null;
+        this.partidos = [];
+
+        Swal.fire(
+          'OK',
+          'Calendario generado correctamente',
+          'success'
+        );
+      },
+      error: (err) => {
+
+        console.error(err);
+
+        this.jornadas = [];
+
+        Swal.fire(
+          'Error',
+          'No fue posible generar el calendario',
+          'error'
+        );
+      }
+    });
+}
 
 }

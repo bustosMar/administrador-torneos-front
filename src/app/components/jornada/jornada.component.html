@@ -59,7 +59,7 @@
 
       <button
         class="btn btn-primary"
-        (click)="generarJornada()">
+        (click)="generarJornadas()">
         Generar Jornada
       </button>
 
@@ -118,7 +118,6 @@
           <tr>
             <th>Local</th>
             <th>Visitante</th>
-            <th>Fecha</th>
             <th>Hora</th>
           </tr>
         </thead>
@@ -130,8 +129,6 @@
             <td>{{ partido.equipoLocal }}</td>
 
             <td>{{ partido.equipoVisitante }}</td>
-
-            <td>{{ partido.fecha }}</td>
 
             <td>{{ partido.hora }}</td>
 
@@ -145,12 +142,22 @@
 
     <div class="mt-3">
 
-       <button
+      <button
+        class="btn btn-primary me-2"
+        (click)="generarJornada()">
+
+        <i class="bi bi-eye"></i>
+        Visualizar Partidos Para la Jornada
+
+      </button>
+
+      <button
         class="btn btn-success"
-        (click)="guardarJornada()">
+        [disabled]="!jornadaVisualizada || !jornadaVisualizada.partidos?.length"
+        (click)="guardarPartidos()">
 
         <i class="bi bi-save"></i>
-        Generar Partidos Para la Jornada
+        Guardar Partidos Para la Jornada
 
       </button>
 

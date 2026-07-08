@@ -10,6 +10,14 @@ export class JornadaService {
 
   constructor(private http: HttpClient) {}
 
+
+   generarJornadas(entity: string, id: number, idCategoria: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${entity}/${id}/${idCategoria}/calendario`,
+      {} // 👈 body vacío obligatorio
+    );
+  }
+
   generarPartidos(entity: string, id: number): Observable<any> {
     return this.http.post<any>(
       `${this.apiUrl}/${entity}/${id}/jornadas/siguiente`,
@@ -17,19 +25,24 @@ export class JornadaService {
     );
   }
 
-   guardarJornada(entity: string, id: number, idCategoria: number): Observable<any> {
-    return this.http.post<any>(
-      `${this.apiUrl}/${entity}/${id}/${idCategoria}/calendario`,
-      {} // 👈 body vacío obligatorio
-    );
-  }
+
+   guardarPartidos(
+      endpoint: string,
+      partidos: any[]
+    ): Observable<any> {
+    
+      return this.http.post<any>(
+        `${this.apiUrl}/${endpoint}`,
+        partidos
+      );
+    }
 
   visualizarJornada(
       endpoint: string,
       idTorneo: number,
       idCategoria: number
-    ) {
-      return this.http.get(
+    ): Observable<any> {
+      return this.http.get<any>(
         `${this.apiUrl}/${endpoint}/${idTorneo}/${idCategoria}/previsualizar-partidos`
       );
     }
