@@ -47,5 +47,15 @@ export class JornadaService {
       );
     }
 
+     jornadaActual(
+      endpoint: string,
+      idTorneo: number,
+      idCategoria: number
+    ): Observable<any> {
+      return this.http.get<any>(
+        `${this.apiUrl}/${endpoint}/${idTorneo}/${idCategoria}/jornadas-actual`
+      );
+    }
+
 
 }

@@ -5,6 +5,7 @@ import { ShellComponent } from './components/shell/shell.component';
 import { GenericCrudComponent } from './components/generic-crud/generic-crud.component';
 import { AuthGuard } from './services/auth.guard';
 import { JornadaComponent } from './components/jornada/jornada.component';
+import { GenerarJornadaComponent } from './components/generar-jornada/generar-jornada.component.';
 
 export const routes: Routes = [
   {
@@ -83,6 +84,10 @@ export const routes: Routes = [
       {
         path: 'jornada',
         component: JornadaComponent
+      },
+      {
+        path: 'generar-jornada',
+        component: GenerarJornadaComponent
       },
       {
         path: '',

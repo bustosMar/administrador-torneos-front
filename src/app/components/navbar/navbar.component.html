@@ -32,21 +32,75 @@
                         Competencia
                     </a>
 
-                    <ul class="dropdown-menu" aria-labelledby="competenciaDropdown">
+                   <ul class="dropdown-menu" aria-labelledby="competenciaDropdown">
+                        <li
+                            class="dropdown-submenu"
+                            (click)="$event.stopPropagation()">
 
-                        <li><a class="dropdown-item" [routerLink]="['/jornada']">Jornada</a></li>
+                            <button
+                                type="button"
+                                class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center"
+                                (click)="toggleSubmenuJornadas($event)">
 
-                        <li><a class="dropdown-item" [routerLink]="['/resultados']">Resultados</a></li>
+                                <span>Jornadas</span>
+                                <i class="bi"
+                                [ngClass]="mostrarSubmenuJornadas ? 'bi-chevron-right' : 'bi-chevron-left'">
+                                </i>
 
-                        <li><a class="dropdown-item" [routerLink]="['/tabla-posiciones-general']">Tabla de posiciones General</a></li>
+                            </button>
 
-                        <li><a class="dropdown-item" [routerLink]="['/tabla-posiciones-grupo']">Tabla de posiciones por Grupo</a></li>
+                            <ul
+                                class="dropdown-menu submenu-jornadas"
+                                [class.show]="mostrarSubmenuJornadas">
 
-                        <li><a class="dropdown-item" [routerLink]="['/tabla-goleadores']">Tabla de goleadores</a></li>
+                                <li>
+                                   <a
+                                    class="dropdown-item"
+                                    [routerLink]="['/jornada']"
+                                    (click)="cerrarMenus()">
+                                    Generar jornadas
+                                    </a>
+                                </li>
 
-                        <li><a class="dropdown-item" [routerLink]="['/sanciones']">Sanciones</a></li>
+                                <li>
+                                   <a
+                                    class="dropdown-item"
+                                    [routerLink]="['/generar-jornada']"
+                                    (click)="cerrarMenus()">
+                                    Hacer oficial la Jornada
+                                  </a>
+                                </li>
 
-                    </ul>
+                                <li>
+                                    <a class="dropdown-item"
+                                    [routerLink]="['/jornada-actual']"
+                                    (click)="cerrarMenus()">
+                                        Jornada actual
+                                    </a>
+                                </li>
+
+                            </ul>
+
+                        </li>
+                    <li>
+                        <a class="dropdown-item" [routerLink]="['/tabla-posiciones-grupo']">
+                            Tabla de posiciones por Grupo
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" [routerLink]="['/tabla-goleadores']">
+                            Tabla de goleadores
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" [routerLink]="['/sanciones']">
+                            Sanciones
+                        </a>
+                    </li>
+
+                </ul>
                 </li>
 
             </ul>

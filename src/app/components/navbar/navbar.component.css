@@ -1,0 +1,15 @@
+.dropdown-submenu {
+    position: relative;
+}
+
+.submenu-jornadas {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    display: none;
+    margin-top: -1px;
+}
+
+.submenu-jornadas.show {
+    display: block;
+}
