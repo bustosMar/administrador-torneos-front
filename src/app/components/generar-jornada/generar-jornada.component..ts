@@ -130,18 +130,46 @@ onTorneoChange(torneoId: number | null) {
 
 
   guardarPartidos(): void {
-    if (!this.jornadaVisualizada || !this.jornadaVisualizada.partidos?.length) {
-      this.mensajeJornadas = 'No hay partidos para guardar.';
-      return;
-    }
+   if (!this.jornadaVisualizada) {
+       Swal.fire('Atención', 'Primero visualice la jornada', 'warning');
+       return;
+     }
 
-    this.crudService.create('partidos/jornada', this.jornadaVisualizada.partidos).subscribe({
+
+     const partidosParaGuardar = this.jornadaVisualizada.partidos.map((partido: any) => ({
+    grupo: partido.idGrupo ?? this.jornadaVisualizada.idGrupo,
+    grupoNombre: partido.grupo ?? this.jornadaVisualizada.grupo,
+
+    jornada: partido.idJornada ?? this.jornadaVisualizada.idJornada,
+    numeroJornada: partido.numeroJornada ?? this.jornadaVisualizada.numeroJornada,
+
+    equipoLocal: partido.idEquipoLocal,
+    equipoLocalNombre: partido.equipoLocal,
+
+    equipoVisitante: partido.idEquipoVisitante,
+    equipoVisitanteNombre: partido.equipoVisitante,
+
+    hora: partido.hora,
+    fecha: partido.fecha ?? this.jornadaVisualizada.fechaProgramada,
+
+    arbitro: partido.idArbitro ?? null,
+    arbitroNombre: partido.arbitro ?? null,
+
+    jugado: true
+  }));
+
+  console.log(
+  JSON.stringify(partidosParaGuardar, null, 2)
+);
+    
+
+    this.crudService.create('partidos/jornada', partidosParaGuardar).subscribe({
       next: () => {
         this.mensajeJornadas = 'Partidos guardados correctamente.';
       },
       error: (error) => {
         console.error('Error al guardar partidos', error);
-        this.mensajeJornadas = 'Ocurrió un error al guardar los partidos.';
+        this.mensajeJornadas = error.error?.message ?? 'Ocurrió un error al guardar los partidos.';
       }
     });
   }
