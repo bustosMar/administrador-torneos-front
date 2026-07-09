@@ -18,6 +18,7 @@ export class JornadaComponent implements OnInit {
   categoriaId: number | null = null;
   grupoId: number | null = null;
   jornadaVisualizada: any = null;
+  mensajeJornadas: string = '';
 
   torneos: any[] = [];
   grupos: any[] = [];
@@ -307,58 +308,39 @@ generarJornada(): void {
 
   generarJornadas(): void {
 
-  if (this.torneoId == null) {
-    Swal.fire(
-      'Atención',
-      'Seleccione un torneo',
-      'warning'
-    );
-    return;
-  }
+  this.mensajeJornadas = '';
+  this.jornadas = [];
+  this.jornadaVisualizada = null;
 
-  if (this.categoriaId == null) {
-    Swal.fire(
-      'Atención',
-      'Seleccione una categoría',
-      'warning'
-    );
+  if (!this.torneoId || !this.categoriaId) {
+    this.mensajeJornadas = 'Seleccione un torneo y una categoría.';
     return;
   }
 
   this.jornadaService
-    .generarJornadas(
-      'jornadas',
-      this.torneoId,
-      this.categoriaId
-    )
+    .generarJornadas('jornadas',this.torneoId, this.categoriaId)
     .subscribe({
-      next: (data: any) => {
 
-        this.jornadas = Array.isArray(data)
-          ? data
-          : [data];
+      next: (response: any[]) => {
 
-        this.jornadaVisualizada = null;
-        this.partidos = [];
+        this.jornadas = response || [];
 
-        Swal.fire(
-          'OK',
-          'Calendario generado correctamente',
-          'success'
-        );
+        if (this.jornadas.length === 0) {
+          this.mensajeJornadas = 'No hay jornadas para programar.';
+        }
+
       },
+
       error: (err) => {
 
-        console.error(err);
-
         this.jornadas = [];
+        this.jornadaVisualizada = null;
 
-        Swal.fire(
-          'Error',
-          'No fue posible generar el calendario',
-          'error'
-        );
+        this.mensajeJornadas =
+          err?.error?.message || 'No hay jornadas para programar.';
+
       }
+
     });
 }
 
