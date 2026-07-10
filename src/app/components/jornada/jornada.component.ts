@@ -148,7 +148,7 @@ generarJornada(): void {
     arbitro: partido.idArbitro ?? null,
     arbitroNombre: partido.arbitro ?? null,
 
-    jugado: true
+    jugado: false
   }));
 
   console.log(

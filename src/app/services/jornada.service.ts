@@ -37,6 +37,7 @@ export class JornadaService {
       );
     }
 
+
   visualizarJornada(
       endpoint: string,
       idTorneo: number,

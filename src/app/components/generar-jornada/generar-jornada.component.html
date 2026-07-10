@@ -62,17 +62,27 @@
 
       <button
         class="btn btn-primary"
+        [disabled]="torneoId === null || categoriaId === null"
         (click)="verJornadaActual()">
+
         <i class="bi bi-eye"></i>
         Ver Jornada Actual
+
       </button>
 
     </div>
 
     <div
-      class="alert alert-info mx-3 mt-3"
+      class="alert mx-3 mt-3"
+      [ngClass]="{
+        'alert-info': tipoMensaje === 'info',
+        'alert-success': tipoMensaje === 'success',
+        'alert-danger': tipoMensaje === 'error'
+      }"
       *ngIf="mensajeJornadas">
+
       {{ mensajeJornadas }}
+
     </div>
 
     <div
@@ -94,7 +104,7 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let j of jornadas; let i = index">
+          <tr *ngFor="let j of jornadas">
 
             <td>{{ j.torneo }}</td>
             <td>{{ j.grupo }}</td>
@@ -109,65 +119,253 @@
 
       <div class="mt-4" *ngIf="jornadaVisualizada">
 
-        <h5>
-          Partidos de la Jornada {{ jornadaVisualizada.numeroJornada }}
-        </h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <table class="table table-bordered table-striped">
+          <h5 class="mb-0">
+            Partidos de la Jornada
+            {{ jornadaVisualizada.numeroJornada }}
+          </h5>
 
-          <thead>
-            <tr>
-              <th>Local</th>
-              <th>Visitante</th>
-              <th>Fecha Partido</th>
-              <th>Hora</th>
-            </tr>
-          </thead>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="agregarPartido()">
 
-          <tbody>
-            <tr *ngFor="let partido of jornadaVisualizada.partidos; let i = index">
+            <i class="bi bi-plus-circle"></i>
+            Agregar partido
 
-              <td>
-                <input
-                  type="text"
-                  class="form-control"
-                  [(ngModel)]="partido.equipoLocal"
-                  readonly>
-              </td>
+          </button>
 
-              <td>
-                <input
-                  type="text"
-                  class="form-control"
-                  [(ngModel)]="partido.equipoVisitante"
-                  readonly>
-              </td>
+        </div>
 
-              <td>
-                <input
-                  type="date"
-                  class="form-control"
-                  [(ngModel)]="partido.fecha">
-              </td>
+        <div class="table-responsive">
 
-              <td>
-                <input
-                  type="time"
-                  class="form-control"
-                  [(ngModel)]="partido.hora">
-              </td>
+          <table class="table table-bordered table-striped align-middle">
 
-            </tr>
-          </tbody>
+            <thead>
+              <tr>
+                <th style="min-width: 180px;">Local</th>
+                <th style="min-width: 180px;">Visitante</th>
+                <th style="min-width: 160px;">Fecha</th>
+                <th style="min-width: 130px;">Hora</th>
+                <th style="min-width: 230px;">Árbitro</th>
+                <th style="min-width: 110px;">Jugado</th>
+                <th style="min-width: 100px;">Acciones</th>
+              </tr>
+            </thead>
 
-        </table>
+            <tbody>
+
+              <tr
+                *ngFor="
+                  let partido of jornadaVisualizada.partidos;
+                  let i = index;
+                  trackBy: trackByPartido
+                ">
+
+                <!-- EQUIPO LOCAL -->
+                <td>
+
+                  <!-- Partido existente -->
+                  <input
+                    *ngIf="!partido.nuevo"
+                    type="text"
+                    class="form-control"
+                    [value]="partido.equipoLocal"
+                    readonly>
+
+                  <!-- Partido nuevo -->
+                  <div
+                    *ngIf="partido.nuevo"
+                    class="position-relative">
+
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="partido.equipoLocal"
+                      (input)="buscarEquipos(partido, 'local')"
+                      (focus)="buscarEquipos(partido, 'local')"
+                      autocomplete="off"
+                      placeholder="Buscar equipo local">
+
+                    <div
+                      class="list-group position-absolute w-100 shadow buscador-resultados"
+                      *ngIf="
+                        partido.mostrarLocales &&
+                        partido.equiposLocalesFiltrados?.length
+                      ">
+
+                      <button
+                        type="button"
+                        class="list-group-item list-group-item-action"
+                        *ngFor="let equipo of partido.equiposLocalesFiltrados"
+                        (click)="seleccionarEquipoLocal(partido, equipo)">
+
+                        {{ obtenerNombreEquipo(equipo) }}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <!-- EQUIPO VISITANTE -->
+                <td>
+
+                  <!-- Partido existente -->
+                  <input
+                    *ngIf="!partido.nuevo"
+                    type="text"
+                    class="form-control"
+                    [value]="partido.equipoVisitante"
+                    readonly>
+
+                  <!-- Partido nuevo -->
+                  <div
+                    *ngIf="partido.nuevo"
+                    class="position-relative">
+
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="partido.equipoVisitante"
+                      (input)="buscarEquipos(partido, 'visitante')"
+                      (focus)="buscarEquipos(partido, 'visitante')"
+                      autocomplete="off"
+                      placeholder="Buscar equipo visitante">
+
+                    <div
+                      class="list-group position-absolute w-100 shadow buscador-resultados"
+                      *ngIf="
+                        partido.mostrarVisitantes &&
+                        partido.equiposVisitantesFiltrados?.length
+                      ">
+
+                      <button
+                        type="button"
+                        class="list-group-item list-group-item-action"
+                        *ngFor="let equipo of partido.equiposVisitantesFiltrados"
+                        (click)="seleccionarEquipoVisitante(partido, equipo)">
+
+                        {{ obtenerNombreEquipo(equipo) }}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <!-- FECHA -->
+                <td>
+                  <input
+                    type="date"
+                    class="form-control"
+                    [(ngModel)]="partido.fecha">
+                </td>
+
+                <!-- HORA -->
+                <td>
+                  <input
+                    type="time"
+                    class="form-control"
+                    [(ngModel)]="partido.hora">
+                </td>
+
+                <!-- ÁRBITRO -->
+                <td>
+
+                  <div class="position-relative">
+
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="partido.arbitroNombre"
+                      (input)="buscarArbitros(partido)"
+                      (focus)="buscarArbitros(partido)"
+                      autocomplete="off"
+                      placeholder="Buscar árbitro">
+
+                    <div
+                      class="list-group position-absolute w-100 shadow buscador-resultados"
+                      *ngIf="
+                        partido.mostrarArbitros &&
+                        partido.arbitrosFiltrados?.length
+                      ">
+
+                      <button
+                        type="button"
+                        class="list-group-item list-group-item-action"
+                        *ngFor="let arbitro of partido.arbitrosFiltrados"
+                        (click)="seleccionarArbitro(partido, arbitro)">
+
+                        {{ obtenerNombreArbitro(arbitro) }}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <!-- JUGADO -->
+                <td>
+
+                  <select
+                    class="form-select"
+                    [(ngModel)]="partido.jugado">
+
+                    <option [ngValue]="false">No</option>
+                    <option [ngValue]="true">Sí</option>
+
+                  </select>
+
+                </td>
+
+                <!-- ACCIONES -->
+                <td class="text-center">
+
+                  <button
+                    *ngIf="partido.nuevo"
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    title="Eliminar partido"
+                    (click)="eliminarPartidoNuevo(i)">
+
+                    <i class="bi bi-trash"></i>
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+              <tr *ngIf="!jornadaVisualizada.partidos?.length">
+                <td colspan="7" class="text-center text-muted">
+                  No existen partidos registrados.
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       </div>
 
       <div class="mt-3">
 
-         <button
+        <button
           class="btn btn-success"
-          [disabled]="!jornadaVisualizada || !jornadaVisualizada.partidos?.length"
+          [disabled]="
+            !jornadaVisualizada ||
+            !jornadaVisualizada.partidos?.length
+          "
           (click)="guardarPartidos()">
 
           <i class="bi bi-save"></i>
