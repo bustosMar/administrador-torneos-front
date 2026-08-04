@@ -21,6 +21,7 @@ export class GenerarJornadaComponent implements OnInit {
   torneos: any[] = [];
   categoriasDisponibles: any[] = [];
   jornadas: any[] = [];
+  gruposDisponiblesJornada: any[] = [];
 
   jornadaVisualizada: any = null;
 
@@ -137,6 +138,7 @@ export class GenerarJornadaComponent implements OnInit {
           }
 
           this.prepararPartidos();
+          this.prepararGruposDisponibles();
 
           /*
            * Temporalmente se obtienen los equipos que ya están presentes
@@ -191,6 +193,9 @@ export class GenerarJornadaComponent implements OnInit {
         return {
           ...partido,
 
+          idGrupo: partido.idGrupo ?? this.jornadaVisualizada?.idGrupo ?? null,
+          grupo: partido.grupo ?? this.jornadaVisualizada?.grupo ?? null,
+
           idArbitro,
           arbitroNombre:
             typeof arbitroNombre === 'string'
@@ -213,6 +218,51 @@ export class GenerarJornadaComponent implements OnInit {
 
       });
 
+  }
+
+  prepararGruposDisponibles(): void {
+
+    const grupos = new Map<string, any>();
+
+    for (const jornada of this.jornadas ?? []) {
+      if (jornada?.idGrupo && jornada?.grupo) {
+        grupos.set(String(jornada.idGrupo), {
+          id: jornada.idGrupo,
+          nombre: jornada.grupo
+        });
+      }
+    }
+
+    for (const partido of this.jornadaVisualizada?.partidos ?? []) {
+      if (partido?.idGrupo && partido?.grupo) {
+        grupos.set(String(partido.idGrupo), {
+          id: partido.idGrupo,
+          nombre: partido.grupo
+        });
+      }
+    }
+
+    if (this.jornadaVisualizada?.idGrupo && this.jornadaVisualizada?.grupo) {
+      grupos.set(String(this.jornadaVisualizada.idGrupo), {
+        id: this.jornadaVisualizada.idGrupo,
+        nombre: this.jornadaVisualizada.grupo
+      });
+    }
+
+    this.gruposDisponiblesJornada = Array.from(grupos.values());
+  }
+
+  onGrupoPartidoChange(partido: any): void {
+    partido.grupo = this.obtenerNombreGrupoPorId(partido.idGrupo);
+  }
+
+  obtenerNombreGrupoPorId(idGrupo: number | null | undefined): string {
+    if (!idGrupo) {
+      return '';
+    }
+
+    const grupo = this.gruposDisponiblesJornada.find((g: any) => g.id === idGrupo);
+    return grupo?.nombre ?? '';
   }
 
   prepararEquiposTemporales(): void {
@@ -276,6 +326,12 @@ export class GenerarJornadaComponent implements OnInit {
       idEquipoVisitante: null,
       equipoVisitante: '',
 
+      idGrupo:
+        this.gruposDisponiblesJornada.length === 1
+          ? this.gruposDisponiblesJornada[0].id
+          : this.jornadaVisualizada.idGrupo ?? null,
+      grupo: '',
+
       fecha:
         this.jornadaVisualizada.fechaProgramada ?? '',
 
@@ -297,6 +353,8 @@ export class GenerarJornadaComponent implements OnInit {
       mostrarLocales: false,
       mostrarVisitantes: false
     };
+
+    nuevoPartido.grupo = this.obtenerNombreGrupoPorId(nuevoPartido.idGrupo);
 
     this.jornadaVisualizada.partidos.push(nuevoPartido);
 
@@ -524,7 +582,10 @@ export class GenerarJornadaComponent implements OnInit {
      
     const partidosRequest = this.jornadaVisualizada.partidos.map((partido: any) => ({
     grupo: partido.idGrupo ?? this.jornadaVisualizada.idGrupo,
-    grupoNombre: partido.grupo ?? this.jornadaVisualizada.grupo,
+    grupoNombre:
+      partido.grupo ??
+      this.obtenerNombreGrupoPorId(partido.idGrupo) ??
+      this.jornadaVisualizada.grupo,
 
     jornada: partido.idJornada ?? this.jornadaVisualizada.idJornada,
     numeroJornada: partido.numeroJornada ?? this.jornadaVisualizada.numeroJornada,
@@ -581,6 +642,10 @@ export class GenerarJornadaComponent implements OnInit {
 
       if (partido.nuevo) {
 
+        if (partido.idGrupo === null || partido.idGrupo === undefined) {
+          return `Seleccione el grupo del partido ${i + 1}.`;
+        }
+
         if (
           partido.idEquipoLocal === null ||
           partido.idEquipoVisitante === null
@@ -634,6 +699,7 @@ export class GenerarJornadaComponent implements OnInit {
 
     this.categoriaId = null;
     this.jornadas = [];
+    this.gruposDisponiblesJornada = [];
   }
 
 }

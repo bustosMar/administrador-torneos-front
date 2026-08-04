@@ -96,7 +96,6 @@
         <thead>
           <tr>
             <th>Torneo</th>
-            <th>Grupo</th>
             <th>Estado</th>
             <th>Jornada</th>
             <th>Fecha Jornada</th>
@@ -107,7 +106,6 @@
           <tr *ngFor="let j of jornadas">
 
             <td>{{ j.torneo }}</td>
-            <td>{{ j.grupo }}</td>
             <td>{{ j.estado }}</td>
             <td>{{ j.numeroJornada }}</td>
             <td>{{ j.fechaProgramada }}</td>
@@ -144,6 +142,7 @@
 
             <thead>
               <tr>
+                <th style="min-width: 180px;">Grupo</th>
                 <th style="min-width: 180px;">Local</th>
                 <th style="min-width: 180px;">Visitante</th>
                 <th style="min-width: 160px;">Fecha</th>
@@ -162,6 +161,40 @@
                   let i = index;
                   trackBy: trackByPartido
                 ">
+
+                <!-- GRUPO -->
+                <td>
+
+                  <input
+                    *ngIf="!partido.nuevo"
+                    type="text"
+                    class="form-control"
+                    [value]="partido.grupo || jornadaVisualizada.grupo || 'Sin grupo'"
+                    readonly>
+
+                  <select
+                    *ngIf="partido.nuevo"
+                    class="form-select"
+                    [(ngModel)]="partido.idGrupo"
+                    (ngModelChange)="onGrupoPartidoChange(partido)">
+
+                    <option [ngValue]="null">Seleccione grupo</option>
+
+                    <option
+                      *ngFor="let grupo of gruposDisponiblesJornada"
+                      [ngValue]="grupo.id">
+                      {{ grupo.nombre }}
+                    </option>
+
+                  </select>
+
+                  <input
+                    *ngIf="partido.nuevo && !gruposDisponiblesJornada.length"
+                    type="text"
+                    class="form-control mt-1"
+                    value="No hay grupos disponibles"
+                    readonly>
+                </td>
 
                 <!-- EQUIPO LOCAL -->
                 <td>
@@ -345,7 +378,7 @@
               </tr>
 
               <tr *ngIf="!jornadaVisualizada.partidos?.length">
-                <td colspan="7" class="text-center text-muted">
+                <td colspan="8" class="text-center text-muted">
                   No existen partidos registrados.
                 </td>
               </tr>

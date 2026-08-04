@@ -69,7 +69,11 @@
     </div>
 
     <div
-      class="alert alert-info mx-3 mt-3"
+      class="alert mx-3 mt-3"
+      [ngClass]="{
+        'alert-info': tipoMensajeJornadas === 'info',
+        'alert-danger': tipoMensajeJornadas === 'error'
+      }"
       *ngIf="mensajeJornadas">
       {{ mensajeJornadas }}
     </div>

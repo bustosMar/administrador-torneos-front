@@ -28,4 +28,28 @@ export class PresenciaPartidoService {
       observaciones: observaciones ?? null
     });
   }
+
+  crearGol(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/goles`, payload);
+  }
+
+  actualizarGol(id: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/goles/${id}`, payload);
+  }
+
+  eliminarGol(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/goles/${id}`);
+  }
+
+  crearSancion(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/sanciones`, payload);
+  }
+
+  actualizarSancion(id: number, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/sanciones/${id}`, payload);
+  }
+
+  eliminarSancion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/sanciones/${id}`);
+  }
 }

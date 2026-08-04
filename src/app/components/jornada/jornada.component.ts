@@ -19,6 +19,7 @@ export class JornadaComponent implements OnInit {
   grupoId: number | null = null;
   jornadaVisualizada: any = null;
   mensajeJornadas: string = '';
+  tipoMensajeJornadas: 'info' | 'error' = 'info';
 
   torneos: any[] = [];
   grupos: any[] = [];
@@ -319,12 +320,14 @@ generarJornada(): void {
   generarJornadas(): void {
 
   this.mensajeJornadas = '';
+  this.tipoMensajeJornadas = 'info';
   this.jornadas = [];
   this.jornadaVisualizada = null;
   this.partidos = [];
   this.jornadasResumen = [];
 
   if (!this.torneoId || !this.categoriaId) {
+    this.tipoMensajeJornadas = 'error';
     this.mensajeJornadas = 'Seleccione un torneo y una categoría.';
     return;
   }
@@ -337,6 +340,7 @@ generarJornada(): void {
         this.jornadas = response || [];
 
         if (this.jornadas.length === 0) {
+          this.tipoMensajeJornadas = 'info';
           this.mensajeJornadas = 'No hay jornadas para programar.';
         }
 
@@ -347,8 +351,16 @@ generarJornada(): void {
         this.jornadas = [];
         this.jornadaVisualizada = null;
 
+        this.tipoMensajeJornadas = 'error';
+
+        const mensajeBackend =
+          err?.error?.message ||
+          err?.error?.error ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          null;
+
         this.mensajeJornadas =
-          err?.error?.message || 'No hay jornadas para programar.';
+          mensajeBackend || 'Ahorita hay jornada en curso';
 
       }
 

@@ -65,14 +65,7 @@
                   [disabled]="escuchandoHuella">
                   {{ escuchandoHuella && equipoActivo === 'visitante' ? 'Escuchando visitante...' : 'Escuchar visitante' }}
                 </button>
-
-                <button
-                  class="btn btn-outline-primary"
-                  type="button"
-                  (click)="capturarHuella()">
-                  Obtener huella actual
-                </button>
-
+                
                 <button
                   class="btn btn-success"
                   type="button"
@@ -89,6 +82,31 @@
                 <span class="badge text-bg-dark" *ngIf="equipoActivo === 'visitante'">
                   Equipo activo: {{ detalle.equipoVisitante }}
                 </span>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Buscar jugador por nombre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="busquedaJugador"
+                  (input)="buscarJugadorPorTexto()"
+                  [disabled]="!equipoActivo"
+                  placeholder="Escribe una letra para buscar">
+
+                <div
+                  class="list-group mt-2"
+                  *ngIf="sugerenciasJugadores.length">
+
+                  <button
+                    type="button"
+                    class="list-group-item list-group-item-action"
+                    *ngFor="let jugador of sugerenciasJugadores"
+                    (click)="seleccionarJugadorPorTexto(jugador)">
+                    {{ jugador.nombreCompleto }}
+                  </button>
+
+                </div>
               </div>
 
               <label class="form-label">Observaciones</label>
@@ -235,7 +253,135 @@
                     <li
                       class="list-group-item"
                       *ngFor="let jugador of registradasLocal">
-                      {{ jugador.nombreCompleto }}
+                      <div class="fw-semibold mb-2">{{ jugador.nombreCompleto }}</div>
+
+                      <div class="row g-2 align-items-end">
+                        <div class="col-3">
+                          <label class="form-label small mb-1">Min gol</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="130"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="getGolForm(jugador.idJugador).minuto">
+                        </div>
+                        <div class="col-4">
+                          <label class="form-label small mb-1">Tipo gol</label>
+                          <select
+                            class="form-select form-select-sm"
+                            [(ngModel)]="getGolForm(jugador.idJugador).tipo">
+                            <option value="NORMAL">Normal</option>
+                            <option value="PENAL">Penal</option>
+                            <option value="AUTOGOL">Autogol</option>
+                          </select>
+                        </div>
+                        <div class="col-5 d-grid">
+                          <button
+                            type="button"
+                            class="btn btn-outline-success btn-sm"
+                            (click)="registrarGol(jugador, 'local')">
+                            Registrar gol
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 align-items-end mt-1">
+                        <div class="col-3">
+                          <label class="form-label small mb-1">Min sanción</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="130"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="getSancionForm(jugador.idJugador).minuto">
+                        </div>
+                        <div class="col-4">
+                          <label class="form-label small mb-1">Tipo sanción</label>
+                          <select
+                            class="form-select form-select-sm"
+                            [(ngModel)]="getSancionForm(jugador.idJugador).tipo">
+                            <option value="AMARILLA">Amarilla</option>
+                            <option value="ROJA">Roja</option>
+                          </select>
+                        </div>
+                        <div class="col-5 d-grid">
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            (click)="registrarSancion(jugador, 'local')">
+                            Registrar sanción
+                          </button>
+                        </div>
+                      </div>
+
+                      <textarea
+                        class="form-control form-control-sm mt-2"
+                        rows="1"
+                        [(ngModel)]="getSancionForm(jugador.idJugador).observacion"
+                        placeholder="Observación sanción (opcional)"></textarea>
+
+                      <div class="mt-2" *ngIf="getEventosJugador(jugador.idJugador).length">
+                        <div class="small fw-semibold text-muted mb-1">Eventos capturados</div>
+
+                        <div
+                          class="border rounded p-2 mb-2"
+                          *ngFor="let evento of getEventosJugador(jugador.idJugador)">
+
+                          <div class="row g-2 align-items-end">
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Tipo</label>
+                              <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                [value]="evento.clase"
+                                readonly>
+                            </div>
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Minuto</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="130"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="evento.minuto">
+                            </div>
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Detalle</label>
+                              <select
+                                class="form-select form-select-sm"
+                                [(ngModel)]="evento.tipo">
+                                <option *ngIf="evento.clase === 'GOL'" value="NORMAL">Normal</option>
+                                <option *ngIf="evento.clase === 'GOL'" value="PENAL">Penal</option>
+                                <option *ngIf="evento.clase === 'GOL'" value="AUTOGOL">Autogol</option>
+                                <option *ngIf="evento.clase === 'SANCION'" value="AMARILLA">Amarilla</option>
+                                <option *ngIf="evento.clase === 'SANCION'" value="ROJA">Roja</option>
+                              </select>
+                            </div>
+                            <div class="col-3 d-grid gap-1">
+                              <button
+                                type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="guardarEvento(jugador, evento)">
+                                Guardar
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="eliminarEvento(jugador, evento)">
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
+
+                          <textarea
+                            *ngIf="evento.clase === 'SANCION'"
+                            class="form-control form-control-sm mt-2"
+                            rows="1"
+                            [(ngModel)]="evento.observacion"
+                            placeholder="Observación sanción (opcional)"></textarea>
+
+                        </div>
+                      </div>
                     </li>
 
                     <li
@@ -252,7 +398,135 @@
                     <li
                       class="list-group-item"
                       *ngFor="let jugador of registradasVisitante">
-                      {{ jugador.nombreCompleto }}
+                      <div class="fw-semibold mb-2">{{ jugador.nombreCompleto }}</div>
+
+                      <div class="row g-2 align-items-end">
+                        <div class="col-3">
+                          <label class="form-label small mb-1">Min gol</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="130"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="getGolForm(jugador.idJugador).minuto">
+                        </div>
+                        <div class="col-4">
+                          <label class="form-label small mb-1">Tipo gol</label>
+                          <select
+                            class="form-select form-select-sm"
+                            [(ngModel)]="getGolForm(jugador.idJugador).tipo">
+                            <option value="NORMAL">Normal</option>
+                            <option value="PENAL">Penal</option>
+                            <option value="AUTOGOL">Autogol</option>
+                          </select>
+                        </div>
+                        <div class="col-5 d-grid">
+                          <button
+                            type="button"
+                            class="btn btn-outline-success btn-sm"
+                            (click)="registrarGol(jugador, 'visitante')">
+                            Registrar gol
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="row g-2 align-items-end mt-1">
+                        <div class="col-3">
+                          <label class="form-label small mb-1">Min sanción</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="130"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="getSancionForm(jugador.idJugador).minuto">
+                        </div>
+                        <div class="col-4">
+                          <label class="form-label small mb-1">Tipo sanción</label>
+                          <select
+                            class="form-select form-select-sm"
+                            [(ngModel)]="getSancionForm(jugador.idJugador).tipo">
+                            <option value="AMARILLA">Amarilla</option>
+                            <option value="ROJA">Roja</option>
+                          </select>
+                        </div>
+                        <div class="col-5 d-grid">
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            (click)="registrarSancion(jugador, 'visitante')">
+                            Registrar sanción
+                          </button>
+                        </div>
+                      </div>
+
+                      <textarea
+                        class="form-control form-control-sm mt-2"
+                        rows="1"
+                        [(ngModel)]="getSancionForm(jugador.idJugador).observacion"
+                        placeholder="Observación sanción (opcional)"></textarea>
+
+                      <div class="mt-2" *ngIf="getEventosJugador(jugador.idJugador).length">
+                        <div class="small fw-semibold text-muted mb-1">Eventos capturados</div>
+
+                        <div
+                          class="border rounded p-2 mb-2"
+                          *ngFor="let evento of getEventosJugador(jugador.idJugador)">
+
+                          <div class="row g-2 align-items-end">
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Tipo</label>
+                              <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                [value]="evento.clase"
+                                readonly>
+                            </div>
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Minuto</label>
+                              <input
+                                type="number"
+                                min="0"
+                                max="130"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="evento.minuto">
+                            </div>
+                            <div class="col-3">
+                              <label class="form-label small mb-1">Detalle</label>
+                              <select
+                                class="form-select form-select-sm"
+                                [(ngModel)]="evento.tipo">
+                                <option *ngIf="evento.clase === 'GOL'" value="NORMAL">Normal</option>
+                                <option *ngIf="evento.clase === 'GOL'" value="PENAL">Penal</option>
+                                <option *ngIf="evento.clase === 'GOL'" value="AUTOGOL">Autogol</option>
+                                <option *ngIf="evento.clase === 'SANCION'" value="AMARILLA">Amarilla</option>
+                                <option *ngIf="evento.clase === 'SANCION'" value="ROJA">Roja</option>
+                              </select>
+                            </div>
+                            <div class="col-3 d-grid gap-1">
+                              <button
+                                type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                (click)="guardarEvento(jugador, evento)">
+                                Guardar
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="eliminarEvento(jugador, evento)">
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
+
+                          <textarea
+                            *ngIf="evento.clase === 'SANCION'"
+                            class="form-control form-control-sm mt-2"
+                            rows="1"
+                            [(ngModel)]="evento.observacion"
+                            placeholder="Observación sanción (opcional)"></textarea>
+
+                        </div>
+                      </div>
                     </li>
 
                     <li
