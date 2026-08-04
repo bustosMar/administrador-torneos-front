@@ -1,0 +1,286 @@
+<div class="container mt-4">
+
+  <div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Registro de Presencias por Partido</span>
+
+      <button
+        class="btn btn-secondary"
+        (click)="onBack()">
+        <i class="bi bi-arrow-left"></i>
+        Regresar
+      </button>
+    </div>
+
+    <div class="card-body" *ngIf="detalle">
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <label class="form-label text-muted">Torneo</label>
+          <div class="form-control bg-light">{{ detalle.torneo }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-muted">Jornada</label>
+          <div class="form-control bg-light">{{ detalle.numeroJornada }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-muted">Fecha</label>
+          <div class="form-control bg-light">{{ detalle.fecha }}</div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label text-muted">Hora</label>
+          <div class="form-control bg-light">{{ detalle.hora }}</div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted">Partido</label>
+          <div class="form-control bg-light">{{ detalle.equipoLocal }} vs {{ detalle.equipoVisitante }}</div>
+        </div>
+        <div class="col-md-2" *ngIf="detalle.municipioEstado">
+          <label class="form-label text-muted">Municipio/Estado</label>
+          <div class="form-control bg-light">{{ detalle.municipioEstado }}</div>
+        </div>
+      </div>
+
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-5">
+          <div class="card border-0 bg-light">
+            <div class="card-body">
+              <h5 class="card-title">Captura por huella</h5>
+              <p class="text-muted mb-3">Selecciona el equipo con el que estás trabajando y luego escanea la huella del jugador.</p>
+
+              <div class="d-flex gap-2 flex-wrap mb-3">
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  (click)="escucharLector('local')"
+                  [disabled]="escuchandoHuella">
+                  {{ escuchandoHuella && equipoActivo === 'local' ? 'Escuchando local...' : 'Escuchar local' }}
+                </button>
+
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  (click)="escucharLector('visitante')"
+                  [disabled]="escuchandoHuella">
+                  {{ escuchandoHuella && equipoActivo === 'visitante' ? 'Escuchando visitante...' : 'Escuchar visitante' }}
+                </button>
+
+                <button
+                  class="btn btn-outline-primary"
+                  type="button"
+                  (click)="capturarHuella()">
+                  Obtener huella actual
+                </button>
+
+                <button
+                  class="btn btn-success"
+                  type="button"
+                  (click)="guardarPendientes()"
+                  [disabled]="!pendientesLocal.length && !pendientesVisitante.length">
+                  Guardar
+                </button>
+              </div>
+
+              <div class="mb-3">
+                <span class="badge text-bg-dark" *ngIf="equipoActivo === 'local'">
+                  Equipo activo: {{ detalle.equipoLocal }}
+                </span>
+                <span class="badge text-bg-dark" *ngIf="equipoActivo === 'visitante'">
+                  Equipo activo: {{ detalle.equipoVisitante }}
+                </span>
+              </div>
+
+              <label class="form-label">Observaciones</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                [(ngModel)]="observaciones"
+                placeholder="Opcional"></textarea>
+
+              <div class="alert alert-secondary mt-3 mb-0">
+                {{ huellaStatus }}
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-4" *ngIf="mostrarJugadorDetectado && jugadorDetectado">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Jugador detectado</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  aria-label="Cerrar"
+                  (click)="cerrarJugadorDetectado()"></button>
+              </div>
+
+              <div class="d-flex gap-3 align-items-start">
+                <img
+                  *ngIf="jugadorDetectado.foto"
+                  [src]="buildImageSrc(jugadorDetectado.foto)"
+                  alt="Foto jugador"
+                  class="rounded border"
+                  style="width: 110px; height: 110px; object-fit: cover;">
+
+                <div>
+                  <div class="fw-semibold">{{ jugadorDetectado.nombreCompleto }}</div>
+                  <div class="text-muted">{{ jugadorDetectado.equipo }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Lista temporal para guardar</span>
+              <span class="badge text-bg-secondary">{{ pendientesLocal.length + pendientesVisitante.length }}</span>
+            </div>
+
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <h6 class="mb-3">{{ detalle.equipoLocal }}</h6>
+                  <ul class="list-group list-group-flush border rounded">
+                    <li
+                      class="list-group-item d-flex justify-content-between align-items-center"
+                      *ngFor="let jugador of pendientesLocal">
+                      <span>{{ jugador.nombreCompleto }}</span>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="quitarPendiente(jugador.idJugador)">
+                        Quitar
+                      </button>
+                    </li>
+
+                    <li
+                      class="list-group-item text-muted"
+                      *ngIf="!pendientesLocal.length">
+                      Sin jugadores pendientes.
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="mb-3">{{ detalle.equipoVisitante }}</h6>
+                  <ul class="list-group list-group-flush border rounded">
+                    <li
+                      class="list-group-item d-flex justify-content-between align-items-center"
+                      *ngFor="let jugador of pendientesVisitante">
+                      <span>{{ jugador.nombreCompleto }}</span>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="quitarPendiente(jugador.idJugador)">
+                        Quitar
+                      </button>
+                    </li>
+
+                    <li
+                      class="list-group-item text-muted"
+                      *ngIf="!pendientesVisitante.length">
+                      Sin jugadores pendientes.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header">{{ detalle.equipoLocal }}</div>
+                <ul class="list-group list-group-flush">
+                  <li
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    *ngFor="let jugador of detalle.jugadoresLocal">
+                    <span>{{ jugador.nombreCompleto }}</span>
+                    <span class="badge" [ngClass]="jugador.presente ? 'text-bg-success' : 'text-bg-secondary'">
+                      {{ jugador.presente ? 'Presente' : 'Pendiente' }}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card h-100">
+                <div class="card-header">{{ detalle.equipoVisitante }}</div>
+                <ul class="list-group list-group-flush">
+                  <li
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    *ngFor="let jugador of detalle.jugadoresVisitante">
+                    <span>{{ jugador.nombreCompleto }}</span>
+                    <span class="badge" [ngClass]="jugador.presente ? 'text-bg-success' : 'text-bg-secondary'">
+                      {{ jugador.presente ? 'Presente' : 'Pendiente' }}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-header">Presencias registradas</div>
+
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <h6 class="mb-3">{{ detalle.equipoLocal }}</h6>
+                  <ul class="list-group list-group-flush border rounded">
+                    <li
+                      class="list-group-item"
+                      *ngFor="let jugador of registradasLocal">
+                      {{ jugador.nombreCompleto }}
+                    </li>
+
+                    <li
+                      class="list-group-item text-muted"
+                      *ngIf="!registradasLocal.length">
+                      Sin presencias registradas.
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="col-md-6">
+                  <h6 class="mb-3">{{ detalle.equipoVisitante }}</h6>
+                  <ul class="list-group list-group-flush border rounded">
+                    <li
+                      class="list-group-item"
+                      *ngFor="let jugador of registradasVisitante">
+                      {{ jugador.nombreCompleto }}
+                    </li>
+
+                    <li
+                      class="list-group-item text-muted"
+                      *ngIf="!registradasVisitante.length">
+                      Sin presencias registradas.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div
+      class="alert mx-3 mt-3"
+      [ngClass]="{
+        'alert-info': tipoMensaje === 'info',
+        'alert-success': tipoMensaje === 'success',
+        'alert-danger': tipoMensaje === 'error'
+      }"
+      *ngIf="mensaje">
+      {{ mensaje }}
+    </div>
+
+  </div>
+
+</div>

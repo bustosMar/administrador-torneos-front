@@ -25,6 +25,7 @@ export class JornadaComponent implements OnInit {
   jornadas: any[] = [];
   partidos: any[] = []; 
   categoriasDisponibles: any[] = [];
+  jornadasResumen: any[] = [];
 
   constructor(
     private crudService: CrudService,
@@ -94,6 +95,7 @@ generarJornada(): void {
         this.jornadas = data ? [data] : [];
 
         this.partidos = data?.partidos ?? [];
+        this.jornadasResumen = this.construirResumenesPorGrupo(this.partidos, data);
 
         if (this.jornadas.length === 0) {
 
@@ -115,6 +117,7 @@ generarJornada(): void {
         this.jornadaVisualizada = null;
         this.jornadas = [];
         this.partidos = [];
+        this.jornadasResumen = [];
 
       }
 
@@ -176,6 +179,9 @@ generarJornada(): void {
 
     this.categoriaId = null;
     this.jornadas = [];
+    this.partidos = [];
+    this.jornadaVisualizada = null;
+    this.jornadasResumen = [];
   }
 
   /**
@@ -292,10 +298,14 @@ generarJornada(): void {
           .subscribe({
             next: (data: any) => {
               this.jornadaVisualizada = data;
+              this.partidos = data?.partidos ?? [];
+              this.jornadasResumen = this.construirResumenesPorGrupo(this.partidos, data);
             },
             error: (err) => {
               console.error(err);
               this.jornadaVisualizada = null;
+              this.partidos = [];
+              this.jornadasResumen = [];
       
               Swal.fire(
                 'Error',
@@ -311,12 +321,13 @@ generarJornada(): void {
   this.mensajeJornadas = '';
   this.jornadas = [];
   this.jornadaVisualizada = null;
+  this.partidos = [];
+  this.jornadasResumen = [];
 
   if (!this.torneoId || !this.categoriaId) {
     this.mensajeJornadas = 'Seleccione un torneo y una categoría.';
     return;
   }
-
   this.jornadaService
     .generarJornadas('jornadas',this.torneoId, this.categoriaId)
     .subscribe({
@@ -343,5 +354,41 @@ generarJornada(): void {
 
     });
 }
+
+  private construirResumenesPorGrupo(partidos: any[], jornadaBase: any): any[] {
+    if (!partidos?.length) {
+      if (!jornadaBase) {
+        return [];
+      }
+
+      return [{
+        torneo: jornadaBase.torneo,
+        grupo: jornadaBase.grupo ?? 'Sin grupo',
+        estado: jornadaBase.estado,
+        numeroJornada: jornadaBase.numeroJornada,
+        fechaProgramada: jornadaBase.fechaProgramada
+      }];
+    }
+
+    const resumenes = new Map<string, any>();
+
+    for (const partido of partidos) {
+      const idGrupo = partido.idGrupo ?? jornadaBase?.idGrupo ?? 'sin-grupo';
+      const idJornada = partido.idJornada ?? jornadaBase?.idJornada ?? 'sin-jornada';
+      const clave = `${idGrupo}-${idJornada}`;
+
+      if (!resumenes.has(clave)) {
+        resumenes.set(clave, {
+          torneo: partido.torneo ?? jornadaBase?.torneo,
+          grupo: partido.grupo ?? jornadaBase?.grupo ?? 'Sin grupo',
+          estado: partido.estado ?? jornadaBase?.estado,
+          numeroJornada: partido.numeroJornada ?? jornadaBase?.numeroJornada,
+          fechaProgramada: partido.fecha ?? jornadaBase?.fechaProgramada
+        });
+      }
+    }
+
+    return Array.from(resumenes.values());
+  }
 
 }

@@ -90,6 +90,14 @@ export const routes: Routes = [
         component: GenerarJornadaComponent
       },
       {
+        path: 'partidos-jornada',
+        loadComponent: () => import('./components/partidos-jornada/partidos-jornada.component').then(m => m.PartidosJornadaComponent)
+      },
+      {
+        path: 'partidos-jornada/:idPartido/presencias',
+        loadComponent: () => import('./components/presencia-partido/presencia-partido.component').then(m => m.PresenciaPartidoComponent)
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

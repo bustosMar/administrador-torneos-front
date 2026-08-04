@@ -46,9 +46,25 @@ export class CrudService {
   escucharLectorHuella() {
      return this.http.post<any>(`${this.apiUrl}/huellas/lector/escuchar`,{});
   }
+
+  escucharLectorHuellaVerificacion() {
+    return this.http.post<any>(`${this.apiUrl}/huellas/verificacion/lector/escuchar`, {});
+  }
+
+  consultarLectorHuellaVerificacion() {
+    return this.http.get<any>(`${this.apiUrl}/huellas/verificacion/obtener`);
+  }
+
+  detenerLectorHuella() {
+    return this.http.post<any>(`${this.apiUrl}/huellas/lector/detener`, {});
+  }
   
   obtenerHuella() {
     return this.http.get<any>(`${this.apiUrl}/huellas/obtener`);
+  }
+
+  obtenerHuellaVerificacion() {
+    return this.http.get<any>(`${this.apiUrl}/huellas/verificacion/obtener`);
   }
 
   

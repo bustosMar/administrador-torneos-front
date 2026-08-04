@@ -85,7 +85,6 @@
         <thead>
           <tr>
             <th>Torneo</th>
-            <th>Grupo</th>
             <th>ESTADO</th>
             <th>JORNADA</th>
             <th>Fecha Jornada</th>
@@ -96,7 +95,6 @@
           <tr *ngFor="let j of jornadas; let i = index">
 
             <td>{{ j.torneo }}</td>
-            <td>{{ j.grupo }}</td>
             <td>{{ j.estado }}</td>
             <td>{{ j.numeroJornada }}</td>
             <td>{{ j.fechaProgramada }}</td>
@@ -109,13 +107,14 @@
       <div class="mt-4" *ngIf="jornadaVisualizada">
 
         <h5>
-          Partidos de la Jornada {{ jornadaVisualizada.numeroJornada }}
+          Partidos de las Jornadas por Grupo
         </h5>
 
         <table class="table table-bordered table-striped">
 
           <thead>
             <tr>
+              <th>Grupo</th>
               <th>Local</th>
               <th>Visitante</th>
               <th>Fecha Partido</th>
@@ -125,6 +124,14 @@
 
           <tbody>
             <tr *ngFor="let partido of jornadaVisualizada.partidos; let i = index">
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  [value]="partido.grupo || jornadaVisualizada.grupo || 'Sin grupo'"
+                  readonly>
+              </td>
 
               <td>
                 <input

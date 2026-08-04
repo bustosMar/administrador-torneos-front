@@ -58,5 +58,14 @@ export class JornadaService {
       );
     }
 
+    partidosJornadaJugada(
+      idTorneo: number,
+      idCategoria: number
+    ): Observable<any[]> {
+      return this.http.get<any[]>(
+        `${this.apiUrl}/partidos/torneo/${idTorneo}/categoria/${idCategoria}/jornada-jugada`
+      );
+    }
+
 
 }

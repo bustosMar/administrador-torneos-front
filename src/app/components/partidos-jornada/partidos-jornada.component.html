@@ -1,0 +1,201 @@
+<div class="container mt-4">
+
+  <div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Partidos de la Jornada</span>
+
+      <button
+        class="btn btn-secondary"
+        (click)="onBack()">
+        <i class="bi bi-arrow-left"></i>
+        Regresar
+      </button>
+    </div>
+
+    <div class="card-body">
+
+      <div class="mb-3">
+
+        <label class="form-label">Torneo</label>
+
+        <select
+          class="form-select"
+          [(ngModel)]="torneoId"
+          (ngModelChange)="onTorneoChange($event)">
+
+          <option [ngValue]="null">
+            Seleccione un torneo
+          </option>
+
+          <option
+            *ngFor="let torneo of torneos"
+            [ngValue]="torneo.id">
+            {{ torneo.nombre }}
+          </option>
+
+        </select>
+
+        <label class="form-label mt-3">Categoría</label>
+
+        <select
+          class="form-select"
+          [(ngModel)]="categoriaId">
+
+          <option [ngValue]="null">
+            Seleccione una categoría
+          </option>
+
+          <option
+            *ngFor="let categoria of categoriasDisponibles"
+            [ngValue]="categoria.id">
+            {{ categoria.categoriaNombre }}
+          </option>
+
+        </select>
+
+      </div>
+
+      <button
+        class="btn btn-primary"
+        [disabled]="torneoId === null || categoriaId === null"
+        (click)="consultarPartidosJornada()">
+
+        <i class="bi bi-eye"></i>
+        Ver Partidos
+
+      </button>
+
+    </div>
+
+    <div
+      class="alert mx-3 mt-3"
+      [ngClass]="{
+        'alert-info': tipoMensaje === 'info',
+        'alert-success': tipoMensaje === 'success',
+        'alert-danger': tipoMensaje === 'error'
+      }"
+      *ngIf="mensajeJornadas">
+      {{ mensajeJornadas }}
+    </div>
+
+    <div
+      class="mt-4 p-3"
+      *ngIf="jornadaResumen">
+
+      <h5>Jornada actual</h5>
+
+      <table class="table table-striped table-bordered mt-2">
+        <thead>
+          <tr>
+            <th>Torneo</th>
+            <th>Estado</th>
+            <th>Jornada</th>
+            <th>Fecha Jornada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="jornadaResumen">
+            <td>{{ jornadaResumen.torneo }}</td>
+            <td>{{ jornadaResumen.estado }}</td>
+            <td>{{ jornadaResumen.numeroJornada }}</td>
+            <td>{{ jornadaResumen.fechaJornada }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mt-4">
+
+        <h5 class="mb-3">
+          Partidos de las Jornadas por Grupo
+        </h5>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Local</th>
+                <th>Visitante</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Árbitro</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let partido of partidos; let i = index; trackBy: trackByPartido">
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.grupo || 'Sin grupo'"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.equipoLocal"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.equipoVisitante"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.fecha"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.hora"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [value]="partido.arbitro || 'Sin asignar'"
+                    readonly
+                    disabled>
+                </td>
+                <td>
+                  <a
+                    class="btn btn-outline-primary btn-sm"
+                    [routerLink]="['/partidos-jornada', partido.idPartido, 'presencias']">
+                    Registrar presencia
+                  </a>
+                </td>
+              </tr>
+
+              <tr *ngIf="!partidos.length">
+                <td colspan="7" class="text-center text-muted">
+                  No existen partidos registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
