@@ -93,9 +93,19 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
     this.escuchandoHuella = true;
 
     this.detenerLectorRemoto(() => {
+      this.escuchandoHuella = true;
       this.crudService.escucharLectorHuellaVerificacion().subscribe({
         next: (response: any) => {
           console.log('[PRESENCIA][HUELLA] Escucha de verificacion iniciada', response);
+
+          if (!response?.success || !response?.escuchando) {
+            this.escuchandoHuella = false;
+            this.huellaStatus = response?.mensaje || 'No se detectó un lector de huellas conectado.';
+            this.mensaje = this.huellaStatus;
+            this.tipoMensaje = 'info';
+            return;
+          }
+
           this.huellaStatus = response?.mensaje || 'Lector en escucha';
           this.consultarHuellaVerificacion();
           this.iniciarConsultaHuella();
@@ -149,6 +159,11 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
           this.huellaStatus = response?.mensaje || 'Todavía no se ha capturado la huella';
           this.mensaje = this.huellaStatus;
           this.tipoMensaje = 'info';
+
+          if (this.lectorFinalizoConError(this.huellaStatus)) {
+            this.detenerConsultaHuella();
+            this.escuchandoHuella = false;
+          }
           return;
         }
 
@@ -159,12 +174,18 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.consultandoHuella = false;
+        this.detenerConsultaHuella();
+        this.escuchandoHuella = false;
         console.error(err);
         this.huellaStatus = 'Error al obtener huella';
         this.mensaje = 'No se pudo recuperar la huella capturada.';
         this.tipoMensaje = 'error';
       }
     });
+  }
+
+  private lectorFinalizoConError(mensaje: string): boolean {
+    return /capturador.*finaliz.*error|error ejecutando capturador|no se detect|lector.*desconect|reader.*not/i.test(mensaje);
   }
 
   private identificarHuella(huella: string): void {
@@ -210,7 +231,7 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
   }
 
   buscarJugadorPorTexto(): void {
-    if (!this.equipoActivo || !this.detalle) {
+    if (!this.detalle) {
       this.sugerenciasJugadores = [];
       return;
     }
@@ -224,7 +245,9 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
 
     const jugadoresEquipo = this.equipoActivo === 'local'
       ? (this.detalle.jugadoresLocal ?? [])
-      : (this.detalle.jugadoresVisitante ?? []);
+      : this.equipoActivo === 'visitante'
+        ? (this.detalle.jugadoresVisitante ?? [])
+        : [...(this.detalle.jugadoresLocal ?? []), ...(this.detalle.jugadoresVisitante ?? [])];
 
     this.sugerenciasJugadores = jugadoresEquipo
       .filter((jugador: any) => (jugador?.nombreCompleto ?? '').toLowerCase().includes(texto))
@@ -232,14 +255,22 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
   }
 
   seleccionarJugadorPorTexto(jugador: any): void {
-    if (!this.equipoActivo || !jugador) {
+    if (!this.detalle || !jugador) {
       return;
     }
+
+    const equipo = this.equipoActivo ?? (
+      (this.detalle.jugadoresLocal ?? []).some(
+        (item: any) => item.idJugador === jugador.idJugador
+      ) ? 'local' : 'visitante'
+    );
+
+    this.equipoActivo = equipo;
 
     this.jugadorDetectado = jugador;
     this.mostrarJugadorDetectado = true;
 
-    this.agregarPendiente(jugador, this.equipoActivo);
+    this.agregarPendiente(jugador, equipo);
     this.actualizarJugadoresPresentes();
 
     this.huellaStatus = `Jugador seleccionado por búsqueda: ${jugador.nombreCompleto}`;

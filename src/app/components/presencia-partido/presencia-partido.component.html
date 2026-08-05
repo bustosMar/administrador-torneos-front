@@ -91,12 +91,12 @@
                   class="form-control"
                   [(ngModel)]="busquedaJugador"
                   (input)="buscarJugadorPorTexto()"
-                  [disabled]="!equipoActivo"
+                  [disabled]="escuchandoHuella"
                   placeholder="Escribe una letra para buscar">
 
                 <div
                   class="list-group mt-2"
-                  *ngIf="sugerenciasJugadores.length">
+                  *ngIf="sugerenciasJugadores.length && !escuchandoHuella">
 
                   <button
                     type="button"
