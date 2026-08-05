@@ -500,10 +500,19 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
       tipo: form.tipo || 'AMARILLA',
       observacion: form.observacion || null
     };
+    const tipoSancion = payload.tipo;
 
     this.presenciaPartidoService.crearSancion(payload).subscribe({
       next: (response: any) => {
-        this.mensaje = `Sanción registrada para ${jugador.nombreCompleto}.`;
+        if (tipoSancion === 'ROJA') {
+          this.mensaje = response?.suspensionGenerada
+            ? `Tarjeta roja registrada para ${jugador.nombreCompleto}. ${response?.mensajeSuspension || ''}`
+            : response?.suspensionPendienteRevision
+              ? `Tarjeta roja registrada para ${jugador.nombreCompleto}. ${response?.mensajeSuspension || ''}`
+              : `Tarjeta roja registrada para ${jugador.nombreCompleto}. Por doble amarilla no genera suspensión`;
+        } else {
+          this.mensaje = `Sanción registrada para ${jugador.nombreCompleto}.`;
+        }
         this.tipoMensaje = 'success';
         this.sancionEditable[jugador.idJugador] = { minuto: null, tipo: 'AMARILLA', observacion: '' };
 
