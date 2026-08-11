@@ -15,9 +15,17 @@
 
     <div class="card-body">
 
-      <div class="mb-3">
+         <div class="row">
 
-        <label class="form-label">Torneo</label>
+      <!-- ================================================== -->
+      <!-- TORNEO -->
+      <!-- ================================================== -->
+
+      <div class="col-md-6 mb-3">
+
+        <label class="form-label fw-semibold">
+          Torneo
+        </label>
 
         <select
           class="form-select"
@@ -31,12 +39,25 @@
           <option
             *ngFor="let torneo of torneos"
             [ngValue]="torneo.id">
+
             {{ torneo.nombre }}
+
           </option>
 
         </select>
 
-        <label class="form-label mt-3">Categoría</label>
+      </div>
+
+
+      <!-- ================================================== -->
+      <!-- CATEGORÍA -->
+      <!-- ================================================== -->
+
+      <div class="col-md-6 mb-3">
+
+        <label class="form-label fw-semibold">
+          Categoría
+        </label>
 
         <select
           class="form-select"
@@ -49,12 +70,16 @@
           <option
             *ngFor="let categoria of categoriasDisponibles"
             [ngValue]="categoria.id">
+
             {{ categoria.categoriaNombre }}
+
           </option>
 
         </select>
 
       </div>
+
+    </div>
 
       <button
         class="btn btn-primary"

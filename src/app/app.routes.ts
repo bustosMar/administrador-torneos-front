@@ -98,6 +98,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/presencia-partido/presencia-partido.component').then(m => m.PresenciaPartidoComponent)
       },
       {
+        path: 'tabla-posiciones',
+        loadComponent: () => import('./components/tabla-posiciones/tabla-posiciones.component').then(m => m.TablaPosicionesComponent)
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

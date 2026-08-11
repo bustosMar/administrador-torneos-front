@@ -340,7 +340,7 @@ export class GenerarJornadaComponent implements OnInit {
       idArbitro: null,
       arbitroNombre: '',
 
-      jugado: false,
+      jugado: true,
 
       nuevo: true,
 

@@ -1,0 +1,794 @@
+<div class="card">
+
+  <!-- ====================================================== -->
+  <!-- ENCABEZADO -->
+  <!-- ====================================================== -->
+
+  <div class="card-header d-flex justify-content-between align-items-center">
+
+    <span class="fw-bold">
+      <i class="bi bi-bar-chart-fill me-2"></i>
+      Tabla de Posiciones
+    </span>
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="onBack()">
+
+      <i class="bi bi-arrow-left me-1"></i>
+
+      Regresar
+
+    </button>
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- FILTROS -->
+  <!-- ====================================================== -->
+
+  <div class="card-body">
+
+    <div class="row">
+
+      <!-- ================================================== -->
+      <!-- TORNEO -->
+      <!-- ================================================== -->
+
+      <div class="col-md-6 mb-3">
+
+        <label class="form-label fw-semibold">
+          Torneo
+        </label>
+
+        <select
+          class="form-select"
+          [(ngModel)]="torneoId"
+          (ngModelChange)="onTorneoChange($event)">
+
+          <option [ngValue]="null">
+            Seleccione un torneo
+          </option>
+
+          <option
+            *ngFor="let torneo of torneos"
+            [ngValue]="torneo.id">
+
+            {{ torneo.nombre }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- ================================================== -->
+      <!-- CATEGORÍA -->
+      <!-- ================================================== -->
+
+      <div class="col-md-6 mb-3">
+
+        <label class="form-label fw-semibold">
+          Categoría
+        </label>
+
+        <select
+          class="form-select"
+          [(ngModel)]="categoriaId">
+
+          <option [ngValue]="null">
+            Seleccione una categoría
+          </option>
+
+          <option
+            *ngFor="let categoria of categoriasDisponibles"
+            [ngValue]="categoria.id">
+
+            {{ categoria.categoriaNombre }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- BOTÓN -->
+    <!-- ====================================================== -->
+
+    <div class="mt-2">
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="
+          torneoId === null ||
+          categoriaId === null
+        "
+        (click)="generarTablasPosiciones()">
+
+        <i class="bi bi-bar-chart-fill me-1"></i>
+
+        Generar Tablas de Posiciones
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- MENSAJE -->
+  <!-- ====================================================== -->
+
+  <div
+    class="alert mx-3 mt-3"
+    [ngClass]="{
+      'alert-info': tipoMensaje === 'info',
+      'alert-success': tipoMensaje === 'success',
+      'alert-danger': tipoMensaje === 'error'
+    }"
+    *ngIf="mensaje">
+
+    <i
+      class="bi"
+      [ngClass]="{
+        'bi-info-circle': tipoMensaje === 'info',
+        'bi-check-circle': tipoMensaje === 'success',
+        'bi-exclamation-triangle': tipoMensaje === 'error'
+      }"
+      class="me-2">
+    </i>
+
+    {{ mensaje }}
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- TABLAS POR GRUPO -->
+  <!-- ====================================================== -->
+
+  <div
+    class="card-body"
+    *ngIf="grupos.length > 0">
+
+
+    <div
+      *ngFor="let grupo of grupos"
+      class="mb-5">
+
+
+      <!-- ================================================== -->
+      <!-- TÍTULO DEL GRUPO -->
+      <!-- ================================================== -->
+
+      <div
+        class="d-flex justify-content-between align-items-center mb-3">
+
+        <h5 class="mb-0">
+
+          <i class="bi bi-people-fill me-2 text-primary"></i>
+
+          {{ grupo.nombre }}
+
+        </h5>
+
+      </div>
+
+
+      <!-- ================================================== -->
+      <!-- TABLA -->
+      <!-- ================================================== -->
+
+      <div class="table-responsive">
+
+        <table
+          class="table table-bordered table-striped table-hover align-middle mb-0">
+
+
+          <!-- ================================================= -->
+          <!-- CABECERA -->
+          <!-- ================================================= -->
+
+          <thead class="table-primary">
+
+            <tr>
+
+              <th
+                class="text-center"
+                style="width: 70px;"
+                title="Posición">
+
+                Pos
+
+              </th>
+
+              <th>
+                Equipo
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Jugados">
+
+                PJ
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Ganados">
+
+                PG
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Empatados">
+
+                PE
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Perdidos">
+
+                PP
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Goles a Favor">
+
+                GF
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Goles en Contra">
+
+                GC
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Diferencia de Goles">
+
+                DG
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Puntos">
+
+                Pts
+
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <!-- ================================================= -->
+          <!-- CUERPO -->
+          <!-- ================================================= -->
+
+          <tbody>
+
+            <tr
+              *ngFor="let equipo of grupo.equipos">
+
+
+              <!-- ============================================= -->
+              <!-- POSICIÓN -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold">
+
+                {{ equipo.posicion }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- EQUIPO -->
+              <!-- ============================================= -->
+
+              <td>
+
+                <div
+                  class="d-flex align-items-center">
+
+
+                  <!-- ESCUDO -->
+                  <img
+                    *ngIf="equipo.escudo"
+                    [src]="equipo.escudo"
+                    [alt]="equipo.equipo"
+                    width="36"
+                    height="36"
+                    class="me-2"
+                    style="object-fit: contain;">
+
+
+                  <!-- NOMBRE -->
+                  <span class="fw-semibold">
+
+                    {{ equipo.equipo }}
+
+                  </span>
+
+                </div>
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PJ -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pj }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PG -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pg }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PE -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pe }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PP -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pp }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- GF -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.gf }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- GC -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.gc }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- DG -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold"
+                [ngClass]="{
+                  'text-success': equipo.dg > 0,
+                  'text-danger': equipo.dg < 0,
+                  'text-secondary': equipo.dg === 0
+                }">
+
+                <span *ngIf="equipo.dg > 0">
+                  +{{ equipo.dg }}
+                </span>
+
+                <span *ngIf="equipo.dg <= 0">
+                  {{ equipo.dg }}
+                </span>
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PUNTOS -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold">
+
+                {{ equipo.pts }}
+
+              </td>
+
+            </tr>
+
+
+            <!-- ============================================= -->
+            <!-- SIN EQUIPOS -->
+            <!-- ============================================= -->
+
+            <tr
+              *ngIf="grupo.equipos.length === 0">
+
+              <td
+                colspan="10"
+                class="text-center text-muted py-4">
+
+                <i class="bi bi-info-circle me-2"></i>
+
+                No existen equipos registrados en este grupo.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- TABLA GENERAL -->
+  <!-- ====================================================== -->
+
+  <div
+    class="card-body"
+    *ngIf="tablaGeneral.length > 0">
+
+
+    <div class="border-top pt-4">
+
+
+      <!-- ================================================== -->
+      <!-- TÍTULO -->
+      <!-- ================================================== -->
+
+      <h4 class="mb-3">
+
+        <i class="bi bi-trophy-fill me-2 text-warning"></i>
+
+        Tabla General
+
+      </h4>
+
+
+      <!-- ================================================== -->
+      <!-- TABLA -->
+      <!-- ================================================== -->
+
+      <div class="table-responsive">
+
+        <table
+          class="table table-bordered table-striped table-hover align-middle">
+
+
+          <!-- ================================================= -->
+          <!-- CABECERA -->
+          <!-- ================================================= -->
+
+          <thead class="table-dark">
+
+            <tr>
+
+              <th
+                class="text-center"
+                style="width: 70px;"
+                title="Posición">
+
+                Pos
+
+              </th>
+
+              <th>
+                Equipo
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Jugados">
+
+                PJ
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Ganados">
+
+                PG
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Empatados">
+
+                PE
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Partidos Perdidos">
+
+                PP
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Goles a Favor">
+
+                GF
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Goles en Contra">
+
+                GC
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Diferencia de Goles">
+
+                DG
+
+              </th>
+
+              <th
+                class="text-center"
+                title="Puntos">
+
+                Pts
+
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <!-- ================================================= -->
+          <!-- CUERPO -->
+          <!-- ================================================= -->
+
+          <tbody>
+
+            <tr
+              *ngFor="let equipo of tablaGeneral">
+
+
+              <!-- ============================================= -->
+              <!-- POSICIÓN -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold">
+
+                {{ equipo.posicion }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- EQUIPO -->
+              <!-- ============================================= -->
+
+              <td>
+
+                <div
+                  class="d-flex align-items-center">
+
+
+                  <!-- ESCUDO -->
+
+                  <img
+                    *ngIf="equipo.escudo"
+                    [src]="equipo.escudo"
+                    [alt]="equipo.equipo"
+                    width="36"
+                    height="36"
+                    class="me-2"
+                    style="object-fit: contain;">
+
+
+                  <!-- NOMBRE -->
+
+                  <span class="fw-semibold">
+
+                    {{ equipo.equipo }}
+
+                  </span>
+
+                </div>
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PJ -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pj }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PG -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pg }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PE -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pe }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PP -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.pp }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- GF -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.gf }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- GC -->
+              <!-- ============================================= -->
+
+              <td class="text-center">
+
+                {{ equipo.gc }}
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- DG -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold"
+                [ngClass]="{
+                  'text-success': equipo.dg > 0,
+                  'text-danger': equipo.dg < 0,
+                  'text-secondary': equipo.dg === 0
+                }">
+
+                <span *ngIf="equipo.dg > 0">
+                  +{{ equipo.dg }}
+                </span>
+
+                <span *ngIf="equipo.dg <= 0">
+                  {{ equipo.dg }}
+                </span>
+
+              </td>
+
+
+              <!-- ============================================= -->
+              <!-- PUNTOS -->
+              <!-- ============================================= -->
+
+              <td
+                class="text-center fw-bold">
+
+                {{ equipo.pts }}
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================== -->
+  <!-- SIN RESULTADOS -->
+  <!-- ====================================================== -->
+
+  <div
+    class="card-body"
+    *ngIf="
+      torneoId !== null &&
+      categoriaId !== null &&
+      !grupos.length &&
+      !tablaGeneral.length
+    ">
+
+    <div class="alert alert-info mb-0">
+
+      <i class="bi bi-info-circle me-2"></i>
+
+      Seleccione un torneo y una categoría y presione
+      <strong>Generar Tablas de Posiciones</strong>.
+
+    </div>
+
+  </div>
+
+</div>

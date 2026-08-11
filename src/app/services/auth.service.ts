@@ -19,7 +19,7 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:8081';
+  private readonly apiUrl = 'http://localhost:8080';
   private readonly tokenKey = 'auth_token';
 
   constructor(private http: HttpClient) {}

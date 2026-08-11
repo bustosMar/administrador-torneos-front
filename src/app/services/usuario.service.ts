@@ -10,7 +10,7 @@ export class Usuarioservice {
 
   private usuarios: Usuario[] = [];
 
-  private url: string = 'http://localhost:8081/api/usuarios';
+  private url: string = 'http://localhost:8080/api/usuarios';
 
   constructor(private http: HttpClient) { }
 

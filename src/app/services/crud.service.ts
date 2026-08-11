@@ -6,7 +6,9 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CrudService {
-  private readonly apiUrl = 'http://localhost:8081/api';
+
+  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrlBio = 'http://localhost:9090/api';
 
   constructor(private http: HttpClient) {}
 
@@ -44,27 +46,27 @@ export class CrudService {
   }
 
   escucharLectorHuella() {
-     return this.http.post<any>(`${this.apiUrl}/huellas/lector/escuchar`,{});
+     return this.http.post<any>(`${this.apiUrlBio}/huellas/lector/escuchar`,{});
   }
 
   escucharLectorHuellaVerificacion() {
-    return this.http.post<any>(`${this.apiUrl}/huellas/verificacion/lector/escuchar`, {});
+    return this.http.post<any>(`${this.apiUrlBio}/huellas/verificacion/lector/escuchar`, {});
   }
 
   consultarLectorHuellaVerificacion() {
-    return this.http.get<any>(`${this.apiUrl}/huellas/verificacion/obtener`);
+    return this.http.get<any>(`${this.apiUrlBio}/huellas/verificacion/obtener`);
   }
 
   detenerLectorHuella() {
-    return this.http.post<any>(`${this.apiUrl}/huellas/lector/detener`, {});
+    return this.http.post<any>(`${this.apiUrlBio}/huellas/lector/detener`, {});
   }
   
   obtenerHuella() {
-    return this.http.get<any>(`${this.apiUrl}/huellas/obtener`);
+    return this.http.get<any>(`${this.apiUrlBio}/huellas/obtener`);
   }
 
   obtenerHuellaVerificacion() {
-    return this.http.get<any>(`${this.apiUrl}/huellas/verificacion/obtener`);
+    return this.http.get<any>(`${this.apiUrlBio}/huellas/verificacion/obtener`);
   }
 
   
