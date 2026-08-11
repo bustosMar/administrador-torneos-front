@@ -102,6 +102,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/tabla-posiciones/tabla-posiciones.component').then(m => m.TablaPosicionesComponent)
       },
       {
+        path: 'tabla-goleo',
+        loadComponent: () => import('./components/tabla-goleo/tabla-goleo.component').then(m => m.TablaGoleoComponent)
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

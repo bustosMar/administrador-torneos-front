@@ -1,0 +1,348 @@
+<!-- =========================================================
+     ENCABEZADO
+     ========================================================= -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+  <span class="fw-bold fs-5">
+
+    <i class="bi bi-bar-chart-fill me-2"></i>
+
+    Tabla de Goleo
+
+  </span>
+
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="onBack()">
+
+    <i class="bi bi-arrow-left me-1"></i>
+
+    Regresar
+
+  </button>
+
+</div>
+
+
+<!-- =========================================================
+     FILTROS
+     ========================================================= -->
+
+<div class="row">
+
+  <!-- =======================================================
+       TORNEO
+       ======================================================= -->
+
+  <div class="col-md-6 mb-3">
+
+    <label class="form-label fw-semibold">
+
+      Torneo
+
+    </label>
+
+
+    <select
+      class="form-select"
+      [(ngModel)]="torneoId"
+      (ngModelChange)="onTorneoChange($event)">
+
+      <option [ngValue]="null">
+
+        Seleccione un torneo
+
+      </option>
+
+
+      <option
+        *ngFor="let torneo of torneos"
+        [ngValue]="torneo.id">
+
+        {{ torneo.nombre }}
+
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- =======================================================
+       CATEGORÍA
+       ======================================================= -->
+
+  <div class="col-md-6 mb-3">
+
+    <label class="form-label fw-semibold">
+
+      Categoría
+
+    </label>
+
+
+    <select
+      class="form-select"
+      [(ngModel)]="categoriaId">
+
+      <option [ngValue]="null">
+
+        Seleccione una categoría
+
+      </option>
+
+
+      <option
+        *ngFor="let categoria of categoriasDisponibles"
+        [ngValue]="categoria.id">
+
+        {{ categoria.categoriaNombre }}
+
+      </option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     BOTÓN CONSULTAR
+     ========================================================= -->
+
+<div class="mt-2">
+
+  <button
+    type="button"
+    class="btn btn-primary"
+    [disabled]="
+      torneoId === null ||
+      categoriaId === null
+    "
+    (click)="generarTablaGoleo()">
+
+    <i class="bi bi-bar-chart-fill me-1"></i>
+
+    Ver Tabla de Goleo
+
+  </button>
+
+</div>
+
+
+<!-- =========================================================
+     MENSAJE
+     ========================================================= -->
+
+<div
+  *ngIf="mensaje"
+  class="alert mt-3"
+  [ngClass]="{
+    'alert-info': tipoMensaje === 'info',
+    'alert-success': tipoMensaje === 'success',
+    'alert-danger': tipoMensaje === 'error'
+  }">
+
+  <i
+    class="bi me-2"
+    [ngClass]="{
+      'bi-info-circle': tipoMensaje === 'info',
+      'bi-check-circle': tipoMensaje === 'success',
+      'bi-exclamation-triangle': tipoMensaje === 'error'
+    }">
+  </i>
+
+  {{ mensaje }}
+
+</div>
+
+
+<!-- =========================================================
+     TABLA DE GOLEO
+     ========================================================= -->
+
+<div
+  class="mt-4"
+  *ngIf="tablaGoleo.length > 0">
+
+
+  <!-- =======================================================
+       TÍTULO
+       ======================================================= -->
+
+  <div
+    class="d-flex justify-content-between align-items-center mb-3">
+
+    <h4 class="mb-0">
+
+      <i class="bi bi-trophy-fill me-2 text-warning"></i>
+
+      Tabla de Goleo
+
+    </h4>
+
+  </div>
+
+
+  <!-- =======================================================
+       TABLA
+       ======================================================= -->
+
+  <div class="table-responsive">
+
+    <table
+      class="table table-bordered table-striped table-hover align-middle">
+
+
+      <!-- =====================================================
+           ENCABEZADO
+           ===================================================== -->
+
+      <thead class="table-dark">
+
+        <tr>
+
+          <!-- POSICIÓN -->
+
+          <th
+            class="text-center"
+            style="width: 80px;"
+            title="Posición">
+
+            #
+
+          </th>
+
+
+          <!-- JUGADOR -->
+
+          <th>
+
+            Jugador
+
+          </th>
+
+
+          <!-- EQUIPO -->
+
+          <th>
+
+            Equipo
+
+          </th>
+
+
+          <!-- GOLES -->
+
+          <th
+            class="text-center"
+            style="width: 100px;"
+            title="Goles">
+
+            Goles
+
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <!-- =====================================================
+           CUERPO
+           ===================================================== -->
+
+      <tbody>
+
+        <tr
+          *ngFor="let jugador of tablaGoleo">
+
+
+          <!-- =================================================
+               POSICIÓN
+               ================================================= -->
+
+          <td
+            class="text-center fw-bold">
+
+            {{ jugador.posicion }}
+
+          </td>
+
+
+          <!-- =================================================
+               JUGADOR
+               ================================================= -->
+
+          <td>
+
+            <span class="fw-semibold">
+
+              {{ jugador.jugador }}
+
+            </span>
+
+          </td>
+
+
+          <!-- =================================================
+               EQUIPO
+               ================================================= -->
+
+          <td>
+
+            {{ jugador.equipo }}
+
+          </td>
+
+
+          <!-- =================================================
+               GOLES
+               ================================================= -->
+
+          <td
+            class="text-center fw-bold">
+
+            <span class="text-success">
+
+              {{ jugador.goles }}
+
+            </span>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     SIN RESULTADOS / MENSAJE INICIAL
+     ========================================================= -->
+
+<div
+  class="alert alert-info mt-4"
+  *ngIf="
+    torneoId !== null &&
+    categoriaId !== null &&
+    tablaGoleo.length === 0 &&
+    mensaje === ''
+  ">
+
+  <i class="bi bi-info-circle me-2"></i>
+
+  Seleccione los filtros y presione
+  <strong>Ver Tabla de Goleo</strong>
+  para consultar los goleadores.
+
+</div>
