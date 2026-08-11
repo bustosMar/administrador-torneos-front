@@ -105,6 +105,10 @@ export const routes: Routes = [
         path: 'tabla-goleo',
         loadComponent: () => import('./components/tabla-goleo/tabla-goleo.component').then(m => m.TablaGoleoComponent)
       },
+       {
+        path: 'sanciones-suspensiones',
+        loadComponent: () => import('./components/sanciones-suspensiones/sanciones-suspensiones.component').then(m => m.SancionesSuspensionesComponent)
+      },
       {
         path: '',
         pathMatch: 'full',
