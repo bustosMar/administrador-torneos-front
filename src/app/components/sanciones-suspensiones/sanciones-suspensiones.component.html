@@ -1,16 +1,20 @@
-<!-- =========================================================
-     ENCABEZADO
-     ========================================================= -->
+<!-- ========================================================= -->
+<!-- ENCABEZADO -->
+<!-- ========================================================= -->
 
 <div class="d-flex justify-content-between align-items-center mb-4">
 
-  <span class="fw-bold fs-5">
+  <div>
 
-    <i class="bi bi-bar-chart-fill me-2"></i>
+    <h4 class="mb-0">
 
-    Tabla de Goleo
+      <i class="bi bi-bar-chart-fill me-2"></i>
 
-  </span>
+      Sanciones / Suspensiones
+
+    </h4>
+
+  </div>
 
 
   <button
@@ -27,120 +31,181 @@
 </div>
 
 
-<!-- =========================================================
-     FILTROS
-     ========================================================= -->
+<!-- ========================================================= -->
+<!-- BUSCADOR -->
+<!-- ========================================================= -->
 
-<div class="row">
+<div class="card mb-4">
 
-  <!-- =======================================================
-       TORNEO
-       ======================================================= -->
+  <div class="card-header bg-primary text-white">
 
-  <div class="col-md-6 mb-3">
+    <span class="fw-bold">
 
-    <label class="form-label fw-semibold">
+      <i class="bi bi-search me-2"></i>
 
-      Torneo
+      Buscar jugador
 
-    </label>
-
-
-    <select
-      class="form-select"
-      [(ngModel)]="torneoId"
-      (ngModelChange)="onTorneoChange($event)">
-
-      <option [ngValue]="null">
-
-        Seleccione un torneo
-
-      </option>
-
-
-      <option
-        *ngFor="let torneo of torneos"
-        [ngValue]="torneo.id">
-
-        {{ torneo.nombre }}
-
-      </option>
-
-    </select>
+    </span>
 
   </div>
 
 
-  <!-- =======================================================
-       CATEGORÍA
-       ======================================================= -->
+  <div class="card-body">
 
-  <div class="col-md-6 mb-3">
+    <!-- ===================================================== -->
+    <!-- INPUT -->
+    <!-- ===================================================== -->
 
-    <label class="form-label fw-semibold">
+    <div class="position-relative">
 
-      Categoría
+      <div class="input-group">
 
-    </label>
+        <span class="input-group-text">
 
+          <i class="bi bi-search"></i>
 
-    <select
-      class="form-select"
-      [(ngModel)]="categoriaId">
-
-      <option [ngValue]="null">
-
-        Seleccione una categoría
-
-      </option>
+        </span>
 
 
-      <option
-        *ngFor="let categoria of categoriasDisponibles"
-        [ngValue]="categoria.id">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Escriba nombre o apellido..."
+          [(ngModel)]="nombreBusqueda"
+          (ngModelChange)="onBuscarJugador()"
+          autocomplete="off">
 
-        {{ categoria.categoriaNombre }}
 
-      </option>
+        <!-- =============================================== -->
+        <!-- LIMPIAR -->
+        <!-- =============================================== -->
 
-    </select>
+        <button
+          *ngIf="nombreBusqueda"
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="limpiarBusqueda()">
+
+          <i class="bi bi-x-lg"></i>
+
+        </button>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- BUSCANDO JUGADORES -->
+      <!-- ================================================= -->
+
+      <div
+        *ngIf="cargando"
+        class="text-muted small mt-2">
+
+        <span
+          class="spinner-border spinner-border-sm me-2">
+        </span>
+
+        Buscando jugadores...
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- RESULTADOS -->
+      <!-- ================================================= -->
+
+      <div
+        *ngIf="
+          jugadoresEncontrados.length > 0
+        "
+        class="list-group position-absolute w-100 shadow"
+        style="z-index: 1050;">
+
+
+        <button
+          *ngFor="let jugador of jugadoresEncontrados"
+          type="button"
+          class="list-group-item list-group-item-action"
+          (click)="seleccionarJugador(jugador)">
+
+
+          <div class="d-flex align-items-center">
+
+
+            <!-- =========================================== -->
+            <!-- ICONO -->
+            <!-- =========================================== -->
+
+            <div class="me-3 text-primary">
+
+              <i
+                class="bi bi-person-circle fs-4">
+              </i>
+
+            </div>
+
+
+            <!-- =========================================== -->
+            <!-- INFORMACIÓN -->
+            <!-- =========================================== -->
+
+            <div>
+
+              <div class="fw-semibold">
+
+                {{ jugador.jugador }}
+
+              </div>
+
+
+              <small class="text-muted">
+
+                ID: {{ jugador.jugadorId }}
+
+              </small>
+
+            </div>
+
+          </div>
+
+        </button>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- SIN RESULTADOS -->
+      <!-- ================================================= -->
+
+      <div
+        *ngIf="
+          !cargando &&
+          nombreBusqueda.trim().length >= 2 &&
+          jugadoresEncontrados.length === 0 &&
+          jugadorResultado === null
+        "
+        class="alert alert-warning mt-2 mb-0">
+
+        <i class="bi bi-exclamation-circle me-2"></i>
+
+        No se encontraron jugadores.
+
+      </div>
+
+    </div>
 
   </div>
 
 </div>
 
 
-<!-- =========================================================
-     BOTÓN CONSULTAR
-     ========================================================= -->
-
-<div class="mt-2">
-
-  <button
-    type="button"
-    class="btn btn-primary"
-    [disabled]="
-      torneoId === null ||
-      categoriaId === null
-    "
-    (click)="generarTablaGoleo()">
-
-    <i class="bi bi-bar-chart-fill me-1"></i>
-
-    Ver Tabla de Goleo
-
-  </button>
-
-</div>
-
-
-<!-- =========================================================
-     MENSAJE
-     ========================================================= -->
+<!-- ========================================================= -->
+<!-- MENSAJE -->
+<!-- ========================================================= -->
 
 <div
   *ngIf="mensaje"
-  class="alert mt-3"
+  class="alert"
   [ngClass]="{
     'alert-info': tipoMensaje === 'info',
     'alert-success': tipoMensaje === 'success',
@@ -161,188 +226,584 @@
 </div>
 
 
-<!-- =========================================================
-     TABLA DE GOLEO
-     ========================================================= -->
+<!-- ========================================================= -->
+<!-- CARGANDO RESULTADO -->
+<!-- ========================================================= -->
 
 <div
-  class="mt-4"
-  *ngIf="tablaGoleo.length > 0">
+  *ngIf="cargandoResultado"
+  class="alert alert-info">
+
+  <span
+    class="spinner-border spinner-border-sm me-2">
+  </span>
+
+  Consultando sanciones y suspensiones...
+
+</div>
 
 
-  <!-- =======================================================
-       TÍTULO
-       ======================================================= -->
+<!-- ========================================================= -->
+<!-- INFORMACIÓN DEL JUGADOR -->
+<!-- ========================================================= -->
 
-  <div
-    class="d-flex justify-content-between align-items-center mb-3">
+<div
+  *ngIf="jugadorResultado as jugador"
+  class="card mb-4">
 
-    <h4 class="mb-0">
 
-      <i class="bi bi-trophy-fill me-2 text-warning"></i>
+  <!-- ======================================================= -->
+  <!-- HEADER -->
+  <!-- ======================================================= -->
 
-      Tabla de Goleo
+  <div class="card-header bg-primary text-white">
 
-    </h4>
+    <div class="d-flex align-items-center">
+
+      <i
+        class="bi bi-person-circle fs-4 me-2">
+      </i>
+
+
+      <span class="fw-bold">
+
+        Información del jugador
+
+      </span>
+
+    </div>
 
   </div>
 
 
-  <!-- =======================================================
-       TABLA
-       ======================================================= -->
+  <!-- ======================================================= -->
+  <!-- BODY -->
+  <!-- ======================================================= -->
 
-  <div class="table-responsive">
+  <div class="card-body">
 
-    <table
-      class="table table-bordered table-striped table-hover align-middle">
-
-
-      <!-- =====================================================
-           ENCABEZADO
-           ===================================================== -->
-
-      <thead class="table-dark">
-
-        <tr>
-
-          <!-- POSICIÓN -->
-
-          <th
-            class="text-center"
-            style="width: 80px;"
-            title="Posición">
-
-            #
-
-          </th>
+    <div class="row">
 
 
-          <!-- JUGADOR -->
+      <!-- =================================================== -->
+      <!-- JUGADOR -->
+      <!-- =================================================== -->
 
-          <th>
+      <div class="col-md-6 mb-3 mb-md-0">
 
-            Jugador
+        <small class="text-muted d-block">
 
-          </th>
+          Jugador
 
-
-          <!-- EQUIPO -->
-
-          <th>
-
-            Equipo
-
-          </th>
+        </small>
 
 
-          <!-- GOLES -->
+        <span class="fw-bold fs-5">
 
-          <th
-            class="text-center"
-            style="width: 100px;"
-            title="Goles">
+          {{ jugador.jugador }}
 
-            Goles
+        </span>
 
-          </th>
-
-        </tr>
-
-      </thead>
+      </div>
 
 
-      <!-- =====================================================
-           CUERPO
-           ===================================================== -->
+      <!-- =================================================== -->
+      <!-- EQUIPO -->
+      <!-- =================================================== -->
 
-      <tbody>
+      <div class="col-md-6">
 
-        <tr
-          *ngFor="let jugador of tablaGoleo">
+        <small class="text-muted d-block">
 
+          Equipo
 
-          <!-- =================================================
-               POSICIÓN
-               ================================================= -->
-
-          <td
-            class="text-center fw-bold">
-
-            {{ jugador.posicion }}
-
-          </td>
+        </small>
 
 
-          <!-- =================================================
-               JUGADOR
-               ================================================= -->
+        <span class="fw-semibold">
 
-          <td>
+          {{ jugador.equipo || 'Sin equipo' }}
 
-            <span class="fw-semibold">
+        </span>
 
-              {{ jugador.jugador }}
+      </div>
 
-            </span>
-
-          </td>
-
-
-          <!-- =================================================
-               EQUIPO
-               ================================================= -->
-
-          <td>
-
-            {{ jugador.equipo }}
-
-          </td>
-
-
-          <!-- =================================================
-               GOLES
-               ================================================= -->
-
-          <td
-            class="text-center fw-bold">
-
-            <span class="text-success">
-
-              {{ jugador.goles }}
-
-            </span>
-
-          </td>
-
-        </tr>
-
-      </tbody>
-
-    </table>
+    </div>
 
   </div>
 
 </div>
 
 
-<!-- =========================================================
-     SIN RESULTADOS / MENSAJE INICIAL
-     ========================================================= -->
+<!-- ========================================================= -->
+<!-- SANCIONES -->
+<!-- ========================================================= -->
 
 <div
-  class="alert alert-info mt-4"
-  *ngIf="
-    torneoId !== null &&
-    categoriaId !== null &&
-    tablaGoleo.length === 0 &&
-    mensaje === ''
-  ">
+  *ngIf="jugadorResultado as jugador"
+  class="card mb-4">
 
-  <i class="bi bi-info-circle me-2"></i>
 
-  Seleccione los filtros y presione
-  <strong>Ver Tabla de Goleo</strong>
-  para consultar los goleadores.
+  <!-- ======================================================= -->
+  <!-- HEADER -->
+  <!-- ======================================================= -->
+
+  <div class="card-header bg-danger text-white">
+
+    <div
+      class="d-flex justify-content-between align-items-center">
+
+
+      <span class="fw-bold">
+
+        <i
+          class="bi bi-exclamation-triangle-fill me-2">
+        </i>
+
+        Sanciones
+
+      </span>
+
+
+      <span
+        class="badge bg-light text-danger">
+
+        {{ jugador.sanciones.length }}
+
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================= -->
+  <!-- BODY -->
+  <!-- ======================================================= -->
+
+  <div class="card-body p-0">
+
+
+    <!-- ===================================================== -->
+    <!-- TABLA -->
+    <!-- ===================================================== -->
+
+    <div
+      *ngIf="jugador.sanciones.length > 0"
+      class="table-responsive">
+
+
+      <table
+        class="table table-bordered table-striped table-hover align-middle mb-0">
+
+
+        <!-- ================================================= -->
+        <!-- CABECERA -->
+        <!-- ================================================= -->
+
+        <thead class="table-dark">
+
+          <tr>
+
+            <th
+              class="text-center"
+              style="width: 70px;">
+
+              #
+
+            </th>
+
+
+            <th>
+
+              Tipo
+
+            </th>
+
+
+            <th
+              class="text-center">
+
+              Minuto
+
+            </th>
+
+
+            <th
+              class="text-center">
+
+              Partido
+
+            </th>
+
+
+            <th>
+
+              Observación
+
+            </th>
+
+
+            <th
+              class="text-center">
+
+              Suspensión
+
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <!-- ================================================= -->
+        <!-- CUERPO -->
+        <!-- ================================================= -->
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let sancion of jugador.sanciones;
+              let i = index
+            ">
+
+
+            <!-- ============================================= -->
+            <!-- POSICIÓN -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center fw-bold">
+
+              {{ i + 1 }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- TIPO -->
+            <!-- ============================================= -->
+
+            <td>
+
+              <span
+                class="badge bg-danger">
+
+                {{ sancion.tipo || 'Sin tipo' }}
+
+              </span>
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- MINUTO -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center">
+
+              {{ sancion.minuto ?? '-' }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- PARTIDO -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center">
+
+              {{ sancion.partido ?? '-' }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- OBSERVACIÓN -->
+            <!-- ============================================= -->
+
+            <td>
+
+              {{ sancion.observacion || '-' }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- SUSPENSIÓN -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center">
+
+
+              <span
+                *ngIf="sancion.suspensionGenerada"
+                class="badge bg-warning text-dark">
+
+                Generada
+
+              </span>
+
+
+              <span
+                *ngIf="
+                  !sancion.suspensionGenerada &&
+                  sancion.suspensionPendienteRevision
+                "
+                class="badge bg-info">
+
+                Pendiente
+
+              </span>
+
+
+              <span
+                *ngIf="
+                  !sancion.suspensionGenerada &&
+                  !sancion.suspensionPendienteRevision
+                "
+                class="text-muted">
+
+                -
+
+              </span>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SIN SANCIONES -->
+    <!-- ===================================================== -->
+
+    <div
+      *ngIf="jugador.sanciones.length === 0"
+      class="text-center text-muted py-4">
+
+      <i
+        class="bi bi-check-circle text-success fs-3">
+      </i>
+
+
+      <div class="mt-2">
+
+        El jugador no tiene sanciones registradas.
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- SUSPENSIONES -->
+<!-- ========================================================= -->
+
+<div
+  *ngIf="jugadorResultado as jugador"
+  class="card mb-4">
+
+
+  <!-- ======================================================= -->
+  <!-- HEADER -->
+  <!-- ======================================================= -->
+
+  <div class="card-header bg-warning">
+
+    <div
+      class="d-flex justify-content-between align-items-center">
+
+
+      <span class="fw-bold">
+
+        <i
+          class="bi bi-calendar-x-fill me-2">
+        </i>
+
+        Suspensiones
+
+      </span>
+
+
+      <span
+        class="badge bg-dark">
+
+        {{ jugador.suspensiones.length }}
+
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- ======================================================= -->
+  <!-- BODY -->
+  <!-- ======================================================= -->
+
+  <div class="card-body p-0">
+
+
+    <!-- ===================================================== -->
+    <!-- TABLA -->
+    <!-- ===================================================== -->
+
+    <div
+      *ngIf="jugador.suspensiones.length > 0"
+      class="table-responsive">
+
+
+      <table
+        class="table table-bordered table-striped table-hover align-middle mb-0">
+
+
+        <!-- ================================================= -->
+        <!-- CABECERA -->
+        <!-- ================================================= -->
+
+        <thead class="table-dark">
+
+          <tr>
+
+            <th
+              class="text-center"
+              style="width: 70px;">
+
+              #
+
+            </th>
+
+
+            <th
+              class="text-center">
+
+              Fecha inicio
+
+            </th>
+
+
+            <th
+              class="text-center">
+
+              Fecha fin
+
+            </th>
+
+
+            <th>
+
+              Motivo
+
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <!-- ================================================= -->
+        <!-- CUERPO -->
+        <!-- ================================================= -->
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let suspension of jugador.suspensiones;
+              let i = index
+            ">
+
+
+            <!-- ============================================= -->
+            <!-- POSICIÓN -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center fw-bold">
+
+              {{ i + 1 }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- FECHA INICIO -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center">
+
+              {{ suspension.fechaInicio || '-' }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- FECHA FIN -->
+            <!-- ============================================= -->
+
+            <td
+              class="text-center">
+
+              {{ suspension.fechaFin || '-' }}
+
+            </td>
+
+
+            <!-- ============================================= -->
+            <!-- MOTIVO -->
+            <!-- ============================================= -->
+
+            <td>
+
+              {{ suspension.motivo || '-' }}
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SIN SUSPENSIONES -->
+    <!-- ===================================================== -->
+
+    <div
+      *ngIf="jugador.suspensiones.length === 0"
+      class="text-center text-muted py-4">
+
+      <i
+        class="bi bi-check-circle text-success fs-3">
+      </i>
+
+
+      <div class="mt-2">
+
+        El jugador no tiene suspensiones registradas.
+
+      </div>
+
+    </div>
+
+  </div>
 
 </div>
