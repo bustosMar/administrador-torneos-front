@@ -348,7 +348,7 @@
   <!-- HEADER -->
   <!-- ======================================================= -->
 
-  <div class="card-header bg-danger text-white">
+  <div class="card-header bg-warning text-dark">
 
     <div
       class="d-flex justify-content-between align-items-center">
@@ -366,7 +366,7 @@
 
 
       <span
-        class="badge bg-light text-danger">
+        class="badge bg-dark text-warning">
 
         {{ jugador.sanciones.length }}
 
@@ -488,7 +488,7 @@
             <td>
 
               <span
-                class="badge bg-danger">
+                class="badge bg-warning text-dark">
 
                 {{ sancion.tipo || 'Sin tipo' }}
 
@@ -622,7 +622,7 @@
   <!-- HEADER -->
   <!-- ======================================================= -->
 
-  <div class="card-header bg-warning">
+  <div class="card-header bg-danger text-white">
 
     <div
       class="d-flex justify-content-between align-items-center">
@@ -640,7 +640,7 @@
 
 
       <span
-        class="badge bg-dark">
+        class="badge bg-light text-danger">
 
         {{ jugador.suspensiones.length }}
 
@@ -710,6 +710,12 @@
 
             </th>
 
+            <th class="text-center">
+
+              Acciones
+
+            </th>
+
           </tr>
 
         </thead>
@@ -744,11 +750,15 @@
             <!-- FECHA INICIO -->
             <!-- ============================================= -->
 
-            <td
-              class="text-center">
-
-              {{ suspension.fechaInicio || '-' }}
-
+            <td class="text-center">
+              <input
+                *ngIf="editingSuspensionId === suspension.id && suspensionDraft as draft"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="draft.fechaInicio">
+              <span *ngIf="editingSuspensionId !== suspension.id">
+                {{ suspension.fechaInicio || '-' }}
+              </span>
             </td>
 
 
@@ -756,11 +766,15 @@
             <!-- FECHA FIN -->
             <!-- ============================================= -->
 
-            <td
-              class="text-center">
-
-              {{ suspension.fechaFin || '-' }}
-
+            <td class="text-center">
+              <input
+                *ngIf="editingSuspensionId === suspension.id && suspensionDraft as draft"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="draft.fechaFin">
+              <span *ngIf="editingSuspensionId !== suspension.id">
+                {{ suspension.fechaFin || '-' }}
+              </span>
             </td>
 
 
@@ -769,9 +783,38 @@
             <!-- ============================================= -->
 
             <td>
+              <textarea
+                *ngIf="editingSuspensionId === suspension.id && suspensionDraft as draft"
+                class="form-control form-control-sm"
+                rows="2"
+                [(ngModel)]="draft.motivo"></textarea>
+              <span *ngIf="editingSuspensionId !== suspension.id">
+                {{ suspension.motivo || '-' }}
+              </span>
+            </td>
 
-              {{ suspension.motivo || '-' }}
-
+            <td class="text-center">
+              <button
+                *ngIf="editingSuspensionId !== suspension.id"
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                (click)="editarSuspension(suspension)">
+                Editar
+              </button>
+              <div *ngIf="editingSuspensionId === suspension.id" class="d-flex gap-1 justify-content-center">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="guardarSuspension(suspension)">
+                  Guardar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="cancelarEdicionSuspension()">
+                  Cancelar
+                </button>
+              </div>
             </td>
 
           </tr>
@@ -800,6 +843,38 @@
 
         El jugador no tiene suspensiones registradas.
 
+      </div>
+
+      <div class="row g-2 text-start mt-3 px-3">
+        <div class="col-md-3">
+          <label class="form-label">Fecha inicio</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="nuevaSuspension.fechaInicio">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Fecha fin</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="nuevaSuspension.fechaFin">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Motivo</label>
+          <textarea
+            class="form-control"
+            rows="1"
+            [(ngModel)]="nuevaSuspension.motivo"></textarea>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button
+            type="button"
+            class="btn btn-danger w-100"
+            (click)="crearSuspension()">
+            Crear suspensión
+          </button>
+        </div>
       </div>
 
     </div>

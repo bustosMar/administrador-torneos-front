@@ -95,6 +95,14 @@ interface JugadoresSancionesSuspensionesResponse {
 })
 export class SancionesSuspensionesComponent implements OnInit {
 
+  editingSuspensionId: number | null = null;
+  suspensionDraft: SuspensionModel | null = null;
+  nuevaSuspension = {
+    fechaInicio: '',
+    fechaFin: '',
+    motivo: ''
+  };
+
 
   // ==========================================================
   // BUSCADOR
@@ -574,6 +582,120 @@ export class SancionesSuspensionesComponent implements OnInit {
 
       });
 
+  }
+
+  editarSuspension(suspension: SuspensionModel): void {
+    this.editingSuspensionId = suspension.id;
+    this.suspensionDraft = {
+      ...suspension,
+      fechaInicio: this.toInputDate(suspension.fechaInicio),
+      fechaFin: this.toInputDate(suspension.fechaFin)
+    };
+  }
+
+  cancelarEdicionSuspension(): void {
+    this.editingSuspensionId = null;
+    this.suspensionDraft = null;
+  }
+
+  crearSuspension(): void {
+    const jugadorId = this.jugadorResultado?.jugadorId;
+
+    if (!jugadorId || !this.nuevaSuspension.fechaInicio || !this.nuevaSuspension.fechaFin) {
+      this.mensaje = 'El jugador y las fechas de la suspensión son obligatorios.';
+      this.tipoMensaje = 'error';
+      return;
+    }
+
+    if (this.nuevaSuspension.fechaFin < this.nuevaSuspension.fechaInicio) {
+      this.mensaje = 'La fecha fin no puede ser anterior a la fecha inicio.';
+      this.tipoMensaje = 'error';
+      return;
+    }
+
+    this.crudService.create('suspensiones', {
+      jugadorId,
+      fechaInicio: this.toBackendDate(this.nuevaSuspension.fechaInicio),
+      fechaFin: this.toBackendDate(this.nuevaSuspension.fechaFin),
+      motivo: this.nuevaSuspension.motivo || null
+    }).subscribe({
+      next: () => {
+        this.mensaje = 'Suspensión creada correctamente.';
+        this.tipoMensaje = 'success';
+        this.nuevaSuspension = { fechaInicio: '', fechaFin: '', motivo: '' };
+        this.buscarSancionesSuspensiones(jugadorId);
+      },
+      error: (error: any) => {
+        this.mensaje = error?.error?.message ?? error?.error?.mensaje ?? 'No fue posible crear la suspensión.';
+        this.tipoMensaje = 'error';
+      }
+    });
+  }
+
+  guardarSuspension(suspension: SuspensionModel): void {
+    if (!this.suspensionDraft || this.editingSuspensionId !== suspension.id) {
+      return;
+    }
+
+    if (!this.suspensionDraft.fechaInicio || !this.suspensionDraft.fechaFin) {
+      this.mensaje = 'Las fechas de la suspensión son obligatorias.';
+      this.tipoMensaje = 'error';
+      return;
+    }
+
+    if (this.suspensionDraft.fechaFin < this.suspensionDraft.fechaInicio) {
+      this.mensaje = 'La fecha fin no puede ser anterior a la fecha inicio.';
+      this.tipoMensaje = 'error';
+      return;
+    }
+
+    const payload = {
+      id: suspension.id,
+      fechaInicio: this.toBackendDate(this.suspensionDraft.fechaInicio),
+      fechaFin: this.toBackendDate(this.suspensionDraft.fechaFin),
+      motivo: this.suspensionDraft.motivo ?? null
+    };
+
+    this.crudService.update('suspensiones', suspension.id, payload).subscribe({
+      next: () => {
+        this.mensaje = 'Suspensión actualizada correctamente.';
+        this.tipoMensaje = 'success';
+        this.cancelarEdicionSuspension();
+
+        if (this.jugadorResultado) {
+          this.buscarSancionesSuspensiones(this.jugadorResultado.jugadorId);
+        }
+      },
+      error: (error: any) => {
+        this.mensaje = error?.error?.message ?? error?.error?.mensaje ?? 'No fue posible actualizar la suspensión.';
+        this.tipoMensaje = 'error';
+      }
+    });
+  }
+
+  private toInputDate(value: string): string {
+    if (!value) {
+      return value;
+    }
+
+    const [day, month, year] = value.includes('/')
+      ? value.split('/')
+      : value.split('-');
+
+    return value.includes('/') ? `${year}-${month}-${day}` : value;
+  }
+
+  private toBackendDate(value: string): string {
+    if (!value) {
+      return value;
+    }
+
+    if (value.includes('/')) {
+      return value;
+    }
+
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
   }
 
 
