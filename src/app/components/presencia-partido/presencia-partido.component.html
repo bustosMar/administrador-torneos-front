@@ -102,8 +102,11 @@
                     type="button"
                     class="list-group-item list-group-item-action"
                     *ngFor="let jugador of sugerenciasJugadores"
+                    [disabled]="jugador.suspendido"
+                    [class.text-danger]="jugador.suspendido"
                     (click)="seleccionarJugadorPorTexto(jugador)">
                     {{ jugador.nombreCompleto }}
+                    <span class="ms-2" *ngIf="jugador.suspendido">(Suspendido)</span>
                   </button>
 
                 </div>
@@ -216,9 +219,12 @@
                   <li
                     class="list-group-item d-flex justify-content-between align-items-center"
                     *ngFor="let jugador of detalle.jugadoresLocal">
-                    <span>{{ jugador.nombreCompleto }}</span>
-                    <span class="badge" [ngClass]="jugador.presente ? 'text-bg-success' : 'text-bg-secondary'">
-                      {{ jugador.presente ? 'Presente' : 'Pendiente' }}
+                    <span [class.text-danger]="jugador.suspendido">
+                      {{ jugador.nombreCompleto }}
+                      <span class="fw-semibold" *ngIf="jugador.suspendido">(Suspendido)</span>
+                    </span>
+                    <span class="badge" [ngClass]="jugador.suspendido ? 'text-bg-danger' : (jugador.presente ? 'text-bg-success' : 'text-bg-secondary')">
+                      {{ jugador.suspendido ? 'Suspendido' : (jugador.presente ? 'Presente' : 'Pendiente') }}
                     </span>
                   </li>
                 </ul>
@@ -232,9 +238,12 @@
                   <li
                     class="list-group-item d-flex justify-content-between align-items-center"
                     *ngFor="let jugador of detalle.jugadoresVisitante">
-                    <span>{{ jugador.nombreCompleto }}</span>
-                    <span class="badge" [ngClass]="jugador.presente ? 'text-bg-success' : 'text-bg-secondary'">
-                      {{ jugador.presente ? 'Presente' : 'Pendiente' }}
+                    <span [class.text-danger]="jugador.suspendido">
+                      {{ jugador.nombreCompleto }}
+                      <span class="fw-semibold" *ngIf="jugador.suspendido">(Suspendido)</span>
+                    </span>
+                    <span class="badge" [ngClass]="jugador.suspendido ? 'text-bg-danger' : (jugador.presente ? 'text-bg-success' : 'text-bg-secondary')">
+                      {{ jugador.suspendido ? 'Suspendido' : (jugador.presente ? 'Presente' : 'Pendiente') }}
                     </span>
                   </li>
                 </ul>
@@ -277,12 +286,14 @@
                             min="0"
                             max="130"
                             class="form-control form-control-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getGolForm(jugador.idJugador).minuto">
                         </div>
                         <div class="col-4">
                           <label class="form-label small mb-1">Tipo gol</label>
                           <select
                             class="form-select form-select-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getGolForm(jugador.idJugador).tipo">
                             <option value="NORMAL">Normal</option>
                             <option value="PENAL">Penal</option>
@@ -293,6 +304,7 @@
                           <button
                             type="button"
                             class="btn btn-outline-success btn-sm"
+                            [disabled]="jugador.suspendido"
                             (click)="registrarGol(jugador, 'local')">
                             Registrar gol
                           </button>
@@ -307,12 +319,14 @@
                             min="0"
                             max="130"
                             class="form-control form-control-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getSancionForm(jugador.idJugador).minuto">
                         </div>
                         <div class="col-4">
                           <label class="form-label small mb-1">Tipo sanción</label>
                           <select
                             class="form-select form-select-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getSancionForm(jugador.idJugador).tipo">
                             <option value="AMARILLA">Amarilla</option>
                             <option value="ROJA">Roja</option>
@@ -322,6 +336,7 @@
                           <button
                             type="button"
                             class="btn btn-outline-danger btn-sm"
+                            [disabled]="jugador.suspendido"
                             (click)="registrarSancion(jugador, 'local')">
                             Registrar sanción
                           </button>
@@ -331,6 +346,7 @@
                       <textarea
                         class="form-control form-control-sm mt-2"
                         rows="1"
+                        [disabled]="jugador.suspendido"
                         [(ngModel)]="getSancionForm(jugador.idJugador).observacion"
                         placeholder="Observación sanción (opcional)"></textarea>
 
@@ -366,12 +382,14 @@
                             min="0"
                             max="130"
                             class="form-control form-control-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getGolForm(jugador.idJugador).minuto">
                         </div>
                         <div class="col-4">
                           <label class="form-label small mb-1">Tipo gol</label>
                           <select
                             class="form-select form-select-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getGolForm(jugador.idJugador).tipo">
                             <option value="NORMAL">Normal</option>
                             <option value="PENAL">Penal</option>
@@ -382,6 +400,7 @@
                           <button
                             type="button"
                             class="btn btn-outline-success btn-sm"
+                            [disabled]="jugador.suspendido"
                             (click)="registrarGol(jugador, 'visitante')">
                             Registrar gol
                           </button>
@@ -396,12 +415,14 @@
                             min="0"
                             max="130"
                             class="form-control form-control-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getSancionForm(jugador.idJugador).minuto">
                         </div>
                         <div class="col-4">
                           <label class="form-label small mb-1">Tipo sanción</label>
                           <select
                             class="form-select form-select-sm"
+                            [disabled]="jugador.suspendido"
                             [(ngModel)]="getSancionForm(jugador.idJugador).tipo">
                             <option value="AMARILLA">Amarilla</option>
                             <option value="ROJA">Roja</option>
@@ -411,6 +432,7 @@
                           <button
                             type="button"
                             class="btn btn-outline-danger btn-sm"
+                            [disabled]="jugador.suspendido"
                             (click)="registrarSancion(jugador, 'visitante')">
                             Registrar sanción
                           </button>
@@ -420,6 +442,7 @@
                       <textarea
                         class="form-control form-control-sm mt-2"
                         rows="1"
+                        [disabled]="jugador.suspendido"
                         [(ngModel)]="getSancionForm(jugador.idJugador).observacion"
                         placeholder="Observación sanción (opcional)"></textarea>
 

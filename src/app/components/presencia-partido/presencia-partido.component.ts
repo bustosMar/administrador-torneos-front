@@ -259,6 +259,12 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (jugador.suspendido) {
+      this.mensaje = 'El jugador está suspendido para la fecha de este partido.';
+      this.tipoMensaje = 'info';
+      return;
+    }
+
     const equipo = this.equipoActivo ?? (
       (this.detalle.jugadoresLocal ?? []).some(
         (item: any) => item.idJugador === jugador.idJugador
@@ -331,6 +337,12 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
   }
 
   private agregarPendiente(jugador: any, equipo: 'local' | 'visitante'): void {
+    if (jugador?.suspendido) {
+      this.mensaje = 'El jugador está suspendido para la fecha de este partido.';
+      this.tipoMensaje = 'info';
+      return;
+    }
+
     const yaRegistrado = (this.detalle?.presenciasRegistradas ?? []).some(
       (item: any) => item.idJugador === jugador.idJugador
     );
@@ -416,6 +428,12 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
     return;
   }
 
+  if (jugador.suspendido) {
+    this.mensaje = 'El jugador está suspendido para la fecha de este partido.';
+    this.tipoMensaje = 'info';
+    return;
+  }
+
   const form = this.getGolForm(jugador.idJugador);
   const minuto = Number(form.minuto);
 
@@ -481,6 +499,12 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (jugador.suspendido) {
+      this.mensaje = 'El jugador está suspendido para la fecha de este partido.';
+      this.tipoMensaje = 'info';
+      return;
+    }
+
     const form = this.getSancionForm(jugador.idJugador);
     const minuto = Number(form.minuto);
 
@@ -529,6 +553,11 @@ export class PresenciaPartidoComponent implements OnInit, OnDestroy {
           ...(this.eventosJugador[jugador.idJugador] ?? []),
           evento
         ];
+
+        if (tipoSancion === 'ROJA' &&
+            (response?.suspensionGenerada || response?.suspensionPendienteRevision)) {
+          this.cargarDetalle();
+        }
       },
       error: (error: any) => {
         console.error('Error al registrar sanción', error);
