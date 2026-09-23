@@ -353,7 +353,8 @@ export class SancionesSuspensionesComponent implements OnInit {
   // ==========================================================
 
   buscarSancionesSuspensiones(
-    jugadorId: number
+    jugadorId: number,
+    mensajeExito?: string
   ): void {
 
 
@@ -537,6 +538,7 @@ export class SancionesSuspensionesComponent implements OnInit {
           ) {
 
             this.mensaje =
+              mensajeExito ??
               'El jugador no tiene sanciones ni suspensiones registradas.';
 
             this.tipoMensaje = 'info';
@@ -544,6 +546,7 @@ export class SancionesSuspensionesComponent implements OnInit {
           } else {
 
             this.mensaje =
+              mensajeExito ??
               'Información del jugador cargada correctamente.';
 
             this.tipoMensaje = 'success';
@@ -620,10 +623,8 @@ export class SancionesSuspensionesComponent implements OnInit {
       motivo: this.nuevaSuspension.motivo || null
     }).subscribe({
       next: () => {
-        this.mensaje = 'Suspensión creada correctamente.';
-        this.tipoMensaje = 'success';
         this.nuevaSuspension = { fechaInicio: '', fechaFin: '', motivo: '' };
-        this.buscarSancionesSuspensiones(jugadorId);
+        this.buscarSancionesSuspensiones(jugadorId, 'Suspensión creada correctamente.');
       },
       error: (error: any) => {
         this.mensaje = error?.error?.message ?? error?.error?.mensaje ?? 'No fue posible crear la suspensión.';
@@ -658,12 +659,10 @@ export class SancionesSuspensionesComponent implements OnInit {
 
     this.crudService.update('suspensiones', suspension.id, payload).subscribe({
       next: () => {
-        this.mensaje = 'Suspensión actualizada correctamente.';
-        this.tipoMensaje = 'success';
         this.cancelarEdicionSuspension();
 
         if (this.jugadorResultado) {
-          this.buscarSancionesSuspensiones(this.jugadorResultado.jugadorId);
+          this.buscarSancionesSuspensiones(this.jugadorResultado.jugadorId, 'Suspensión actualizada correctamente.');
         }
       },
       error: (error: any) => {

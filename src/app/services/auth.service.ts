@@ -72,6 +72,16 @@ export class AuthService {
     return this.extractRoles(rawAuthorities);
   }
 
+  // Compara ignorando mayúsculas y el prefijo ROLE_ para evitar falsos negativos.
+  hasRole(role: string): boolean {
+    const target = this.normalizeRole(role);
+    return this.getRoles().some(r => this.normalizeRole(r) === target);
+  }
+
+  private normalizeRole(role: string): string {
+    return role.trim().toUpperCase().replace(/^ROLE_/, '');
+  }
+
   getExpiration(): Date | null {
     const payload = this.getPayload();
     if (!payload?.exp) {

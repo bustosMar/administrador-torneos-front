@@ -34,6 +34,7 @@
 
                    <ul class="dropdown-menu" aria-labelledby="competenciaDropdown">
                         <li
+                            *ngIf="puedeVerPartidosJornada()"
                             class="dropdown-submenu"
                             (click)="$event.stopPropagation()">
 
@@ -53,7 +54,7 @@
                                 class="dropdown-menu submenu-jornadas"
                                 [class.show]="mostrarSubmenuJornadas">
 
-                                <li>
+                                <li *ngIf="esAdmin()">
                                    <a
                                     class="dropdown-item"
                                     [routerLink]="['/jornada']"
@@ -62,7 +63,7 @@
                                     </a>
                                 </li>
 
-                                <li>
+                                <li *ngIf="esAdmin()">
                                    <a
                                     class="dropdown-item"
                                     [routerLink]="['/generar-jornada']"
@@ -82,19 +83,19 @@
                             </ul>
 
                         </li>
-                    <li>
+                    <li *ngIf="esAdmin()">
                         <a class="dropdown-item" [routerLink]="['/tabla-posiciones']">
                             Tabla de posiciones
                         </a>
                     </li>
 
-                    <li>
+                    <li *ngIf="esAdmin()">
                         <a class="dropdown-item" [routerLink]="['/tabla-goleo']">
                             Tabla de goleadores
                         </a>
                     </li>
 
-                    <li>
+                    <li *ngIf="puedeVerSancionesSuspensiones()">
                         <a class="dropdown-item" [routerLink]="['/sanciones-suspensiones']">
                             Sanciones/Suspensiones
                         </a>

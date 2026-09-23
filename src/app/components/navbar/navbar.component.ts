@@ -26,6 +26,18 @@ export class NavbarComponent {
     this.router.navigate(['/login']);
   }
 
+  puedeVerPartidosJornada(): boolean {
+    return this.authService.hasRole('ADMIN') || this.authService.hasRole('REFEREE');
+  }
+
+  esAdmin(): boolean {
+    return this.authService.hasRole('ADMIN');
+  }
+
+  puedeVerSancionesSuspensiones(): boolean {
+    return this.authService.hasRole('ADMIN') || this.authService.hasRole('USER');
+  }
+
 
    toggleSubmenuJornadas(event: MouseEvent): void {
       event.preventDefault();

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'dashboard-page',
@@ -11,7 +12,7 @@ import { RouterModule } from '@angular/router';
 })
 export class DashboardComponent {
 
-  entities = [
+  private readonly catalogos = [
     {
       label: 'Torneos',
       path: '/torneos',
@@ -68,5 +69,11 @@ export class DashboardComponent {
       image: 'assets/img/usuario.jpg'
     },
   ];
+
+  constructor(private authService: AuthService) {}
+
+  get entities() {
+    return this.authService.hasRole('ADMIN') ? this.catalogos : [];
+  }
 
 }
