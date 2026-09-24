@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PresenciaPartidoService {
-  private readonly apiUrl = 'http://localhost:8080/api';
+  constructor(
+    private http: HttpClient,
+    private runtimeConfig: RuntimeConfigService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return this.runtimeConfig.apiUrl;
+  }
 
   obtenerDetalle(idPartido: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/presencias/partido/${idPartido}`);

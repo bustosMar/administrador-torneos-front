@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { RuntimeConfigService } from './runtime-config.service';
 
 export interface LoginCredentials {
   nombreUsuario: string;
@@ -19,13 +20,15 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:8080';
   private readonly tokenKey = 'auth_token';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private runtimeConfig: RuntimeConfigService
+  ) {}
 
   login(credentials: LoginCredentials): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/api/auth/login`, credentials).pipe(
+    return this.http.post<LoginResponse>(`${this.runtimeConfig.apiUrl}/auth/login`, credentials).pipe(
       tap(response => {
         this.storeToken(response.token);
       })

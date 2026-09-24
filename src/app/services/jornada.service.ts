@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class JornadaService {
-  private readonly apiUrl = 'http://localhost:8080/api';
+  constructor(
+    private http: HttpClient,
+    private runtimeConfig: RuntimeConfigService
+  ) {}
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return this.runtimeConfig.apiUrl;
+  }
 
 
    generarJornadas(entity: string, id: number, idCategoria: number): Observable<any> {

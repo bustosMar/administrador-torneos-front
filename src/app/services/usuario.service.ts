@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Usuario } from '../models/usuario';
 import { Observable} from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,9 +11,14 @@ export class Usuarioservice {
 
   private usuarios: Usuario[] = [];
 
-  private url: string = 'http://localhost:8080/api/usuarios';
+  constructor(
+    private http: HttpClient,
+    private runtimeConfig: RuntimeConfigService
+  ) { }
 
-  constructor(private http: HttpClient) { }
+  private get url(): string {
+    return `${this.runtimeConfig.apiUrl}/usuarios`;
+  }
 
   findAll(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.url);

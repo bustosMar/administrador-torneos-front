@@ -1,16 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CrudService {
 
-  private readonly apiUrl = 'http://localhost:8080/api';
   private readonly apiUrlBio = 'http://localhost:9090/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private runtimeConfig: RuntimeConfigService
+  ) {}
+
+  private get apiUrl(): string {
+    return this.runtimeConfig.apiUrl;
+  }
 
   findAll(entity: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${entity}`);
